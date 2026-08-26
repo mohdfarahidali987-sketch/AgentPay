@@ -61,13 +61,6 @@ export async function searchProducts(
         },
       ],
     },
-    orderBy: [
-      {
-        price: "asc",
-      },
-      {
-        rating: "desc",
-      },
-    ],
+ 
   });
 }

@@ -20,12 +20,17 @@ model User {
 
 model Product {
   id          String   @id @default(cuid())
+  sku         String @unique
   name        String
   description String
+
   price       Float
-  stock       Int      @default(0)
+  stock       Int
   category    String
-  rating      Float    @default(0)
+  rating      Float
+  reviewCount Int      @default(0)
+  brand       String?
+  attributes  Json?
   createdAt   DateTime @default(now())
 
   orders      Order[]

@@ -116,11 +116,11 @@ router.post("/search", async (req, res) => {
       });
     }
 
-    const products =
-      await findProducts(
-        intent.query,
-        intent.maxPrice
-      );
+  const products = await findProducts(
+  intent.query,
+  intent.maxPrice,
+  intent.preference
+);
 
     return res.json({
       intent,

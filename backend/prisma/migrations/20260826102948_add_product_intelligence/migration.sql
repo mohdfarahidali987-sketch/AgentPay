@@ -1,0 +1,6 @@
+-- AlterTable
+ALTER TABLE "Product" ADD COLUMN     "attributes" JSONB,
+ADD COLUMN     "brand" TEXT,
+ADD COLUMN     "reviewCount" INTEGER NOT NULL DEFAULT 0,
+ALTER COLUMN "stock" DROP DEFAULT,
+ALTER COLUMN "rating" DROP DEFAULT;

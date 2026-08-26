@@ -2,18 +2,29 @@ import {
   searchProducts,
 } from "../services/product.services.js";
 
+import {
+  rankProducts,
+  type RankingPreference,
+} from "../services/product-ranking";
+
 export async function findProducts(
   query: string,
-  maxPrice?: number | null
+  maxPrice?: number | null,
+  preference: RankingPreference = "BALANCED"
 ) {
   if (!query.trim()) {
     return [];
   }
 
-  const products = await searchProducts(
-    query,
-    maxPrice ?? undefined
-  );
+  const products =
+    await searchProducts(
+      query,
+      maxPrice ?? undefined
+    );
 
-  return products;
+  return rankProducts(
+    products,
+    maxPrice,
+    preference
+  );
 }

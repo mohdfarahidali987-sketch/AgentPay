@@ -22,17 +22,23 @@ const intentSchema = z.object({
     .nullable()
     .default(null),
 
+  preference: z
+    .enum([
+      "QUALITY",
+      "PRICE",
+      "BALANCED",
+    ])
+    .default("BALANCED"),
+
   response: z.string().default(""),
 });
 
 export type CommerceIntent =
   z.infer<typeof intentSchema>;
 
-
 export async function understandCommerceIntent(
   message: string
 ): Promise<CommerceIntent> {
-
   const completion =
     await client.chat.completions.create({
       model:
@@ -55,9 +61,6 @@ and commerce assistant.
 
 Your job is to understand the user's message
 and decide what should happen next.
-
-You can handle both normal conversation and
-commerce requests.
 
 Classify the user's message into exactly ONE
 of these intents:
@@ -188,15 +191,6 @@ Examples:
 For GENERAL_CHAT, provide a helpful,
 short response in the "response" field.
 
-Example:
-
-{
-  "intent": "GENERAL_CHAT",
-  "query": "",
-  "maxPrice": null,
-  "response": "Hi! I'm AgentPay AI. I can help you find products and complete purchases safely."
-}
-
 
 ========================================
 UNKNOWN
@@ -207,7 +201,7 @@ reasonably be understood or is completely
 outside the capabilities of AgentPay.
 
 Do NOT use UNKNOWN just because the user
-has spelling mistakes or uses informal language.
+has spelling mistakes or informal language.
 
 For example:
 
@@ -273,6 +267,129 @@ request.
 
 
 ========================================
+USER PREFERENCE
+========================================
+
+Extract what the user cares about when
+choosing between products.
+
+There are exactly three possible values:
+
+QUALITY
+PRICE
+BALANCED
+
+
+QUALITY
+--------
+
+Use QUALITY when the user prioritizes
+product quality, reliability, reputation,
+ratings, or reviews.
+
+Examples:
+
+"best quality mouse"
+
+"highest rated laptop"
+
+"most reliable headphones"
+
+"best reviewed keyboard"
+
+"give me a durable phone"
+
+"show me the best quality accessories"
+
+"prioritize ratings and reviews"
+
+"which one is the most trustworthy?"
+
+Words such as:
+
+best quality
+highest rated
+reliable
+durable
+trusted
+best reviewed
+quality
+reputation
+
+should generally indicate QUALITY.
+
+
+PRICE
+-----
+
+Use PRICE when the user explicitly wants
+the cheapest or lowest-cost option.
+
+Examples:
+
+"cheapest mouse"
+
+"lowest price laptop"
+
+"most affordable keyboard"
+
+"find me a budget mouse"
+
+"show me the cheapest accessories"
+
+"give me the lowest priced option"
+
+
+BALANCED
+--------
+
+Use BALANCED when the user does not explicitly
+prioritize either quality or price.
+
+Examples:
+
+"show me accessories under 2000"
+
+"find me a wireless mouse"
+
+"show me laptops under 50000"
+
+"recommend a keyboard"
+
+Balanced means the ranking system should consider
+multiple factors such as relevance, quality,
+reviews, price and availability.
+
+
+IMPORTANT:
+
+The price limit itself does NOT mean PRICE.
+
+For example:
+
+"best quality mouse under 2000"
+
+means:
+
+maxPrice = 2000
+preference = QUALITY
+
+NOT:
+
+preference = PRICE
+
+
+Similarly:
+
+"cheapest mouse under 2000"
+
+means:
+
+maxPrice = 2000
+preference = PRICE
+
+
+========================================
 RESPONSE
 ========================================
 
@@ -308,6 +425,7 @@ The JSON MUST have exactly this structure:
   "intent": "SEARCH_PRODUCT | PURCHASE_PRODUCT | GENERAL_CHAT | UNKNOWN",
   "query": "",
   "maxPrice": null,
+  "preference": "QUALITY | PRICE | BALANCED",
   "response": ""
 }
 
@@ -324,23 +442,17 @@ Never return explanations outside JSON.
       ],
     });
 
-
   const raw =
     completion.choices[0]?.message?.content ||
     "{}";
 
-
   try {
-
-    const parsed =
-      JSON.parse(raw);
+    const parsed = JSON.parse(raw);
 
     const result =
       intentSchema.safeParse(parsed);
 
-
     if (!result.success) {
-
       console.error(
         "Invalid supervisor response:",
         result.error.flatten()
@@ -350,16 +462,15 @@ Never return explanations outside JSON.
         intent: "UNKNOWN",
         query: "",
         maxPrice: null,
+        preference: "BALANCED",
         response:
           "I'm sorry, I couldn't understand that request.",
       };
     }
 
-
     return result.data;
 
   } catch (error) {
-
     console.error(
       "Failed to parse supervisor response:",
       error
@@ -369,6 +480,7 @@ Never return explanations outside JSON.
       intent: "UNKNOWN",
       query: "",
       maxPrice: null,
+      preference: "BALANCED",
       response:
         "I'm sorry, I couldn't understand that request.",
     };
