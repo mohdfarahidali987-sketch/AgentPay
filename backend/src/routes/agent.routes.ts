@@ -1,5 +1,7 @@
 import { Router } from "express";
 
+import { authMiddleware } from "../middleware/auth.middleware";
+import { validateBody, schemas } from "../middleware/validation.middleware";
 import {
   understandCommerceIntent,
 } from "../agents/supervisor.agent";
@@ -42,27 +44,26 @@ const router = Router();
  *      ↓
  * Commerce Intent
  */
-router.post("/understand", async (req, res) => {
-  try {
-    const { message } = req.body;
+router.post(
+  "/understand",
+  validateBody(schemas.understandIntent),
+  async (req, res) => {
+    try {
+      const { message } = req.body;
 
-    if (
-      typeof message !== "string" ||
-      !message.trim()
-    ) {
-      return res.status(400).json({
-        message: "message is required",
-      });
-    }
-
-    const intent =
-      await understandCommerceIntent(message);
+      const intent =
+        await understandCommerceIntent(message);
 
     return res.json({
       message,
       intent,
     });
   } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Unknown error";
+
     console.error(
       "Supervisor agent failed:",
       error
@@ -70,6 +71,10 @@ router.post("/understand", async (req, res) => {
 
     return res.status(500).json({
       message: "AI agent failed",
+      code: "SUPERVISOR_AGENT_ERROR",
+      ...(process.env.NODE_ENV === "development" && {
+        details: message,
+      }),
     });
   }
 });
@@ -90,21 +95,15 @@ router.post("/understand", async (req, res) => {
  *      ↓
  * PostgreSQL
  */
-router.post("/search", async (req, res) => {
-  try {
-    const { message } = req.body;
+router.post(
+  "/search",
+  validateBody(schemas.searchProducts),
+  async (req, res) => {
+    try {
+      const { message } = req.body;
 
-    if (
-      typeof message !== "string" ||
-      !message.trim()
-    ) {
-      return res.status(400).json({
-        message: "message is required",
-      });
-    }
-
-    const intent =
-      await understandCommerceIntent(message);
+      const intent =
+        await understandCommerceIntent(message);
 
     if (
       intent.intent !== "SEARCH_PRODUCT"
@@ -129,14 +128,22 @@ router.post("/search", async (req, res) => {
     });
 
   } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Unknown error";
+
     console.error(
       "AI product search failed:",
       error
     );
 
     return res.status(500).json({
-      message:
-        "Product search failed",
+      message: "Product search failed",
+      code: "PRODUCT_SEARCH_ERROR",
+      ...(process.env.NODE_ENV === "development" && {
+        details: message,
+      }),
     });
   }
 });
@@ -164,31 +171,20 @@ router.post("/search", async (req, res) => {
  */
 router.post(
   "/guardrail",
+  authMiddleware,
+  validateBody(schemas.checkGuardrail),
   async (req, res) => {
     try {
       const {
-        userId,
         amount,
       } = req.body;
 
-      if (
-        typeof userId !== "string" ||
-        !userId.trim() ||
-        typeof amount !== "number"
-      ) {
-        return res.status(400).json({
-          message:
-            "userId and numeric amount are required",
-        });
-      }
+      // ✅ Get userId from JWT token
+      const userId = req.user?.userId;
 
-      if (
-        !Number.isFinite(amount) ||
-        amount <= 0
-      ) {
-        return res.status(400).json({
-          message:
-            "amount must be a positive number",
+      if (!userId) {
+        return res.status(401).json({
+          message: "User not authenticated",
         });
       }
 
@@ -287,25 +283,32 @@ router.post(
  */
 router.post(
   "/purchase",
+  authMiddleware,
   async (req, res) => {
     try {
       const {
-        userId,
         productId,
       } = req.body;
+
+      // ✅ Get userId from JWT token
+      const userId = req.user?.userId;
+
+      if (!userId) {
+        return res.status(401).json({
+          message: "User not authenticated",
+        });
+      }
 
       /*
        * Validate request body.
        */
       if (
-        typeof userId !== "string" ||
-        !userId.trim() ||
         typeof productId !== "string" ||
         !productId.trim()
       ) {
         return res.status(400).json({
           message:
-            "userId and productId are required",
+            "productId is required",
         });
       }
 

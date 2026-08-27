@@ -1,18 +1,19 @@
 import { Router } from "express";
+import { authMiddleware } from "../middleware/auth.middleware";
+import { validateBody, schemas } from "../middleware/validation.middleware";
 import { createRazorpayOrder } from "../payments/razorpay.service";
 
 const router = Router();
 
-router.post("/create-order", async (req, res) => {
+router.post("/create-order", authMiddleware, validateBody(schemas.createRazorpayOrder), async (req, res) => {
   try {
     const { amount, receipt } = req.body;
 
-    if (
-      typeof amount !== "number" ||
-      amount <= 0
-    ) {
-      return res.status(400).json({
-        message: "Valid amount is required",
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      return res.status(401).json({
+        message: "User not authenticated",
       });
     }
 

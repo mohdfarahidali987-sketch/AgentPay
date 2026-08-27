@@ -1,34 +1,22 @@
 import { Router } from "express";
 import prisma from "../lib/prisma";
+import { signAccessToken } from "../lib/auth";
+import { validateBody, schemas } from "../middleware/validation.middleware";
 
 const router = Router();
 
 // Create a test/demo user
-router.post("/", async (req, res) => {
-  try {
-    const { name, email, spendingLimit } = req.body;
+router.post(
+  "/",
+  validateBody(schemas.createUser),
+  async (req, res) => {
+    try {
+      const { name, email, spendingLimit } = req.body;
 
-    if (
-      typeof name !== "string" ||
-      !name.trim() ||
-      typeof email !== "string" ||
-      !email.trim()
-    ) {
-      return res.status(400).json({
-        message: "name and email are required",
-      });
-    }
-
-    const limit =
-      spendingLimit === undefined
-        ? 5000
-        : Number(spendingLimit);
-
-    if (!Number.isFinite(limit) || limit < 0) {
-      return res.status(400).json({
-        message: "spendingLimit must be a valid non-negative number",
-      });
-    }
+      const limit =
+        spendingLimit === undefined
+          ? 5000
+          : Number(spendingLimit);
 
     const existingUser = await prisma.user.findUnique({
       where: { email },
@@ -60,6 +48,50 @@ router.post("/", async (req, res) => {
     });
   }
 });
+
+// Login endpoint - Get JWT token
+router.post(
+  "/login",
+  validateBody(schemas.login),
+  async (req, res) => {
+    try {
+      const { email } = req.body;
+
+      const user = await prisma.user.findUnique({
+        where: {
+          email: email.trim().toLowerCase(),
+        },
+      });
+
+      if (!user) {
+        return res.status(404).json({
+          message: "User not found",
+        });
+      }
+
+      const token = signAccessToken({
+        userId: user.id,
+        email: user.email,
+      });
+
+      return res.json({
+        accessToken: token,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          spendingLimit: user.spendingLimit,
+        },
+      });
+    } catch (error) {
+      console.error("Login failed:", error);
+
+      return res.status(500).json({
+        message: "Login failed",
+      });
+    }
+  }
+);
 
 // Get user
 router.get("/:id", async (req, res) => {

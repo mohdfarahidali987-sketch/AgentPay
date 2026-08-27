@@ -1,0 +1,118 @@
+import { Request, Response, NextFunction } from "express";
+import { z } from "zod";
+import { logger } from "../lib/logger";
+
+/**
+ * Create a validation middleware for request body
+ */
+export function validateBody<T>(
+  schema: z.ZodSchema<T>
+) {
+  return async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> => {
+    try {
+      const validated = await schema.parseAsync(
+        req.body
+      );
+      req.body = validated;
+      next();
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        logger.warn("Validation error", {
+          endpoint: req.path,
+          errors: error.errors.length,
+        });
+
+        res.status(400).json({
+          message: "Validation failed",
+          code: "VALIDATION_ERROR",
+          errors: error.errors.map((e) => ({
+            field: e.path.join("."),
+            message: e.message,
+          })),
+        });
+        return;
+      }
+      next(error);
+    }
+  };
+}
+
+/**
+ * Validation schemas for common requests
+ */
+
+export const schemas = {
+  // Auth schemas
+  createUser: z.object({
+    name: z
+      .string()
+      .min(1, "name is required")
+      .max(100, "name is too long"),
+    email: z
+      .string()
+      .email("email must be valid"),
+    spendingLimit: z
+      .number()
+      .nonnegative("spendingLimit must be non-negative")
+      .optional(),
+  }),
+
+  login: z.object({
+    email: z
+      .string()
+      .email("email must be valid"),
+  }),
+
+  // Agent schemas
+  understandIntent: z.object({
+    message: z
+      .string()
+      .min(1, "message is required")
+      .max(500, "message is too long"),
+  }),
+
+  searchProducts: z.object({
+    message: z
+      .string()
+      .min(1, "message is required")
+      .max(500, "message is too long"),
+  }),
+
+  checkGuardrail: z.object({
+    amount: z
+      .number()
+      .positive("amount must be positive"),
+  }),
+
+  createOrder: z.object({
+    productId: z
+      .string()
+      .min(1, "productId is required"),
+  }),
+
+  // Payment schemas
+  createRazorpayOrder: z.object({
+    amount: z
+      .number()
+      .positive("amount must be positive"),
+    receipt: z
+      .string()
+      .optional(),
+  }),
+
+  verifyPayment: z.object({
+    orderId: z
+      .string()
+      .min(1, "orderId is required"),
+    paymentId: z
+      .string()
+      .min(1, "paymentId is required"),
+    signature: z
+      .string()
+      .min(1, "signature is required"),
+  }),
+};
