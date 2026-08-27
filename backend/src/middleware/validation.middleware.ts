@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { z } from "zod";
+import { z, ZodIssue } from "zod";
 import { logger } from "../lib/logger";
 
 /**
@@ -23,15 +23,15 @@ export function validateBody<T>(
       if (error instanceof z.ZodError) {
         logger.warn("Validation error", {
           endpoint: req.path,
-          errors: error.errors.length,
+          statusCode: 400,
         });
 
         res.status(400).json({
           message: "Validation failed",
           code: "VALIDATION_ERROR",
-          errors: error.errors.map((e) => ({
-            field: e.path.join("."),
-            message: e.message,
+          errors: error.issues.map((issue: z.ZodIssue) => ({
+            field: issue.path.join("."),
+            message: issue.message,
           })),
         });
         return;
