@@ -674,33 +674,72 @@ router.post(
       }
 
 
-      // ---------------------------------------------
-      // Mark order as PAID
-      // ---------------------------------------------
+   
 
-   const updatedOrder =
-  await prisma.order.update({
-    where: {
-      id: order.id,
-    },
+// ---------------------------------------------
+// Atomically update stock + order
+// ---------------------------------------------
 
-    data: {
-      status: "PAID",
+const updatedOrder =
+  await prisma.$transaction(async (tx) => {
 
-      razorpayPaymentId,
-      razorpaySignature,
-    },
+    // Decrease stock only if stock is still available.
+    // This is atomic and prevents stock from
+    // becoming negative during concurrent purchases.
 
-    include: {
-      product: true,
-      user: true,
+    const stockUpdate =
+      await tx.product.updateMany({
+        where: {
+          id: order.productId,
+          stock: {
+            gt: 0,
+          },
+        },
 
-      agentActions: {
-        orderBy: {
-          createdAt: "desc",
+        data: {
+          stock: {
+            decrement: 1,
+          },
+        },
+      });
+
+
+    // No row updated means the product was
+    // already out of stock.
+
+    if (stockUpdate.count === 0) {
+      throw new Error(
+        "PRODUCT_OUT_OF_STOCK"
+      );
+    }
+
+
+    // Mark the order as paid only after
+    // successfully reserving/decreasing stock.
+
+    return tx.order.update({
+      where: {
+        id: order.id,
+      },
+
+      data: {
+        status: "PAID",
+
+        razorpayPaymentId,
+        razorpaySignature,
+      },
+
+      include: {
+        product: true,
+        user: true,
+
+        agentActions: {
+          orderBy: {
+            createdAt: "desc",
+          },
         },
       },
-    },
+    });
   });
 
 
