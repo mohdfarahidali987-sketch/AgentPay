@@ -55,8 +55,8 @@ function App() {
   // PURCHASE STATE
   // ===================================================
 
-  const [purchaseLoading, setPurchaseLoading] =
-    useState(false);
+ const [processingProductId, setProcessingProductId] =
+  useState<string | null>(null);
 
   const [purchaseError, setPurchaseError] =
     useState("");
@@ -169,7 +169,7 @@ function App() {
         return;
       }
 
-      setPurchaseLoading(true);
+      setProcessingProductId(product.id);
 
       setPurchaseError("");
 
@@ -362,9 +362,7 @@ function App() {
               // Payment verified
               // -----------------------------------------
 
-              setPaymentSuccess(
-                true
-              );
+            
 
 
              setPaymentSuccess(true);
@@ -456,30 +454,67 @@ setPurchaseError("");
 
       razorpay.open();
 
-    } catch (error) {
+   } catch (error) {
+  console.error(
+    "Purchase failed:",
+    error
+  );
 
-      console.error(
-        "Purchase failed:",
-        error
-      );
+  setPaymentSuccess(false);
 
+  // -----------------------------------------------
+  // Handle spending guardrail rejection
+  // -----------------------------------------------
+
+  if (
+    error instanceof Error &&
+    "guardrail" in error
+  ) {
+    const purchaseError = error as Error & {
+      status?: number;
+      guardrail?: {
+        decision: string;
+        reason: string;
+        currentSpending: number;
+        requestedAmount: number;
+        spendingLimit: number;
+        remainingLimit: number;
+      };
+    };
+
+    const guardrail =
+      purchaseError.guardrail;
+
+    if (
+      purchaseError.status === 403 &&
+      guardrail?.decision === "BLOCKED"
+    ) {
+      setGuardrail({
+        ...guardrail,
+        decision: "BLOCKED",
+      });
 
       setPurchaseError(
-
-        error instanceof Error
-          ? error.message
-          : "Purchase failed."
-
+        `You're out of budget. This product costs ₹${guardrail.requestedAmount.toLocaleString("en-IN")}, but you have only ₹${guardrail.remainingLimit.toLocaleString("en-IN")} remaining in your spending limit.`
       );
 
-    } finally {
-
-      setPurchaseLoading(
-        false
-      );
-
+      return;
     }
+  }
 
+  // -----------------------------------------------
+  // Other purchase errors
+  // -----------------------------------------------
+
+  setPurchaseError(
+    error instanceof Error
+      ? error.message
+      : "Purchase failed. Please try again."
+  );
+
+} finally {
+  setProcessingProductId(null);
+}
   };
 
 
@@ -549,21 +584,11 @@ setPurchaseError("");
             PRODUCT RECOMMENDATIONS
         ================================================= */}
 
-        <ProductGrid
-
-          products={
-            products
-          }
-
-          onBuy={
-            handleBuy
-          }
-
-          purchaseLoading={
-            purchaseLoading
-          }
-
-        />
+    <ProductGrid
+  products={products}
+  onBuy={handleBuy}
+  processingProductId={processingProductId}
+/>
 
 
         {/* =================================================
@@ -586,165 +611,268 @@ setPurchaseError("");
         ================================================= */}
 
      {paymentSuccess && paymentInfo && (
-  <section className="mt-6 overflow-hidden rounded-2xl border border-emerald-500/30 bg-slate-900">
+  <section className="mt-16">
 
-    {/* Header */}
+    <div className="overflow-hidden rounded-3xl border border-emerald-500/20 bg-slate-900 shadow-2xl shadow-emerald-950/20">
 
-    <div className="border-b border-slate-800 bg-emerald-500/5 p-6">
+      {/* ================================================= */}
+      {/* SUCCESS HEADER */}
+      {/* ================================================= */}
 
-      <div className="flex items-center gap-4">
+      <div className="relative overflow-hidden border-b border-slate-800 px-6 py-10 text-center sm:px-10">
 
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500/20 text-2xl text-emerald-400">
-          ✓
-        </div>
+        {/* Glow */}
 
-        <div>
+        <div className="pointer-events-none absolute left-1/2 top-0 h-40 w-40 -translate-x-1/2 rounded-full bg-emerald-500/10 blur-3xl" />
 
-          <h3 className="text-xl font-semibold text-emerald-400">
+        <div className="relative">
+
+          {/* Success icon */}
+
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-emerald-500/30 bg-emerald-500/10 text-3xl text-emerald-400 shadow-lg shadow-emerald-500/10">
+            ✓
+          </div>
+
+          <h3 className="mt-5 text-2xl font-bold text-white">
             Payment Successful
           </h3>
 
-          <p className="mt-1 text-sm text-slate-400">
-            Your payment has been verified successfully by AgentPay AI.
+          <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-slate-500">
+            Your payment has been verified and your order has been
+            successfully confirmed by AgentPay AI.
           </p>
+
+          {/* Amount */}
+
+          <div className="mt-6">
+
+            <p className="text-xs font-medium uppercase tracking-widest text-slate-600">
+              Amount Paid
+            </p>
+
+            <p className="mt-1 text-4xl font-bold tracking-tight text-white">
+              ₹{paymentInfo.amount.toLocaleString("en-IN")}
+            </p>
+
+          </div>
 
         </div>
 
       </div>
 
-    </div>
 
+      {/* ================================================= */}
+      {/* ORDER DETAILS */}
+      {/* ================================================= */}
 
-    {/* Order Information */}
-
-    <div className="p-6">
-
-      <div className="mb-6">
-
-        <h4 className="text-lg font-semibold">
-          Order Confirmation
-        </h4>
-
-        <p className="mt-1 text-sm text-slate-500">
-          Your purchase has been successfully processed.
-        </p>
-
-      </div>
-
-
-      <div className="grid gap-4 md:grid-cols-2">
-
+      <div className="p-6 sm:p-8">
 
         {/* Product */}
 
-        <div className="rounded-xl border border-slate-800 bg-slate-950 p-4">
+        <div className="rounded-2xl border border-slate-800 bg-slate-950 p-5">
 
-          <p className="text-sm text-slate-500">
-            Product
-          </p>
+          <div className="flex items-start justify-between gap-5">
 
-          <p className="mt-2 font-semibold">
-            {paymentInfo.productName}
-          </p>
+            <div>
 
-        </div>
+              <p className="text-xs font-medium uppercase tracking-wider text-slate-600">
+                Purchased Product
+              </p>
 
+              <h4 className="mt-2 text-lg font-semibold text-white">
+                {paymentInfo.productName}
+              </h4>
 
-        {/* Amount */}
+            </div>
 
-        <div className="rounded-xl border border-slate-800 bg-slate-950 p-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-500/10 text-lg">
+              🛍️
+            </div>
 
-          <p className="text-sm text-slate-500">
-            Amount Paid
-          </p>
-
-          <p className="mt-2 text-xl font-bold text-white">
-            ₹{paymentInfo.amount.toLocaleString()}
-          </p>
+          </div>
 
         </div>
 
 
-        {/* Order ID */}
+        {/* ================================================= */}
+        {/* VERIFICATION STEPS */}
+        {/* ================================================= */}
 
-        <div className="rounded-xl border border-slate-800 bg-slate-950 p-4">
+        <div className="mt-5 grid gap-3 md:grid-cols-3">
 
-          <p className="text-sm text-slate-500">
-            AgentPay Order ID
-          </p>
+          <div className="rounded-xl border border-emerald-500/10 bg-emerald-500/[0.03] p-4">
 
-          <p className="mt-2 break-all font-mono text-sm text-slate-300">
-            {paymentInfo.orderId}
-          </p>
+            <div className="flex items-center gap-3">
+
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-400">
+                ✓
+              </span>
+
+              <div>
+                <p className="text-sm font-medium text-slate-200">
+                  Guardrail approved
+                </p>
+
+                <p className="text-xs text-slate-600">
+                  Spending limit checked
+                </p>
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div className="rounded-xl border border-emerald-500/10 bg-emerald-500/[0.03] p-4">
+
+            <div className="flex items-center gap-3">
+
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-400">
+                ✓
+              </span>
+
+              <div>
+                <p className="text-sm font-medium text-slate-200">
+                  Payment verified
+                </p>
+
+                <p className="text-xs text-slate-600">
+                  Razorpay signature verified
+                </p>
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div className="rounded-xl border border-emerald-500/10 bg-emerald-500/[0.03] p-4">
+
+            <div className="flex items-center gap-3">
+
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-400">
+                ✓
+              </span>
+
+              <div>
+                <p className="text-sm font-medium text-slate-200">
+                  Order confirmed
+                </p>
+
+                <p className="text-xs text-slate-600">
+                  Transaction completed
+                </p>
+              </div>
+
+            </div>
+
+          </div>
 
         </div>
 
 
-        {/* Status */}
+        {/* ================================================= */}
+        {/* TRANSACTION DETAILS */}
+        {/* ================================================= */}
 
-        <div className="rounded-xl border border-slate-800 bg-slate-950 p-4">
+        <div className="mt-6 rounded-2xl border border-slate-800">
 
-          <p className="text-sm text-slate-500">
-            Order Status
-          </p>
+          <div className="border-b border-slate-800 px-5 py-4">
 
-          <p className="mt-2 font-semibold text-emerald-400">
-            {paymentInfo.status}
-          </p>
+            <div className="flex items-center justify-between">
+
+              <div>
+
+                <h4 className="font-semibold text-slate-200">
+                  Transaction Details
+                </h4>
+
+                <p className="mt-1 text-xs text-slate-600">
+                  Secure payment information
+                </p>
+
+              </div>
+
+              <span className="rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-400">
+                {paymentInfo.status}
+              </span>
+
+            </div>
+
+          </div>
+
+
+          <div className="divide-y divide-slate-800">
+
+            {/* AgentPay Order */}
+
+            <div className="flex flex-col gap-2 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+
+              <span className="text-sm text-slate-500">
+                AgentPay Order ID
+              </span>
+
+              <span className="break-all font-mono text-xs text-slate-300 sm:max-w-md sm:text-right">
+                {paymentInfo.orderId}
+              </span>
+
+            </div>
+
+
+            {/* Razorpay Order */}
+
+            <div className="flex flex-col gap-2 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+
+              <span className="text-sm text-slate-500">
+                Razorpay Order ID
+              </span>
+
+              <span className="break-all font-mono text-xs text-slate-300 sm:max-w-md sm:text-right">
+                {paymentInfo.razorpayOrderId}
+              </span>
+
+            </div>
+
+
+            {/* Payment ID */}
+
+            <div className="flex flex-col gap-2 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+
+              <span className="text-sm text-slate-500">
+                Razorpay Payment ID
+              </span>
+
+              <span className="break-all font-mono text-xs text-slate-300 sm:max-w-md sm:text-right">
+                {paymentInfo.razorpayPaymentId}
+              </span>
+
+            </div>
+
+          </div>
 
         </div>
 
 
-        {/* Razorpay Order ID */}
+        {/* ================================================= */}
+        {/* FINAL MESSAGE */}
+        {/* ================================================= */}
 
-        <div className="rounded-xl border border-slate-800 bg-slate-950 p-4">
+        <div className="mt-6 flex items-start gap-3 rounded-2xl border border-violet-500/20 bg-violet-500/5 p-5">
 
-          <p className="text-sm text-slate-500">
-            Razorpay Order ID
-          </p>
-
-          <p className="mt-2 break-all font-mono text-sm text-slate-300">
-            {paymentInfo.razorpayOrderId}
-          </p>
-
-        </div>
-
-
-        {/* Razorpay Payment ID */}
-
-        <div className="rounded-xl border border-slate-800 bg-slate-950 p-4">
-
-          <p className="text-sm text-slate-500">
-            Razorpay Payment ID
-          </p>
-
-          <p className="mt-2 break-all font-mono text-sm text-slate-300">
-            {paymentInfo.razorpayPaymentId}
-          </p>
-
-        </div>
-
-      </div>
-
-
-      {/* Verification */}
-
-      <div className="mt-6 rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4">
-
-        <div className="flex items-center gap-3">
-
-          <span className="text-emerald-400">
-            ✓
+          <span className="mt-0.5 text-lg">
+            🤖
           </span>
 
           <div>
 
-            <p className="font-medium text-emerald-400">
-              Payment Verified
+            <p className="text-sm font-semibold text-violet-300">
+              AgentPay AI completed the transaction
             </p>
 
-            <p className="text-sm text-slate-500">
-              Razorpay payment signature was successfully verified by the AgentPay backend.
+            <p className="mt-1 text-sm leading-6 text-slate-500">
+              The AI agent evaluated your request, checked the spending
+              guardrail, created the Razorpay order, and verified the
+              payment before confirming this purchase.
             </p>
 
           </div>

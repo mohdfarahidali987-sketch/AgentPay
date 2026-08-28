@@ -17,7 +17,7 @@ export type Product = {
 export type CommerceIntent = {
   intent: string;
   query?: string;
-  maxPrice?: number | null;
+  maxPrice?: number;
   preference?: "QUALITY" | "PRICE" | "BALANCED";
   response?: string;
 };

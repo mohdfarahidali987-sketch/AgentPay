@@ -4,7 +4,7 @@ import type {
   SearchResponse,
 } from "../types";
 
-const API_URL = "http://localhost:5000";
+const API_URL =import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 export type AuthUser = {
   id: string;
@@ -135,8 +135,9 @@ export async function chatWithAgent(message: string) {
 // ======================================================
 // Purchase Product
 // ======================================================
-
-export async function purchaseProduct(productId: string): Promise<PurchaseResponse> {
+export async function purchaseProduct(
+  productId: string
+): Promise<PurchaseResponse> {
   const response = await fetch(
     `${API_URL}/api/agent/purchase`,
     {
@@ -153,14 +154,20 @@ export async function purchaseProduct(productId: string): Promise<PurchaseRespon
     }
   );
 
-  const data =
-    await response.json();
+  const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(
-      data.message ||
-        "Purchase failed"
-    );
+    const error = new Error(
+      data.message || "Purchase failed"
+    ) as Error & {
+      status?: number;
+      guardrail?: PurchaseResponse["guardrail"];
+    };
+
+    error.status = response.status;
+    error.guardrail = data.guardrail;
+
+    throw error;
   }
 
   return data as PurchaseResponse;
