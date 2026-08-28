@@ -1,13 +1,70 @@
+import type {
+  PaymentVerificationResponse,
+  PurchaseResponse,
+  SearchResponse,
+} from "../types";
+
 const API_URL = "http://localhost:5000";
+
+export type AuthUser = {
+  id: string;
+  name: string;
+  email: string;
+  spendingLimit: number;
+};
+
+export async function loginUser(email: string) {
+  const response = await fetch(`${API_URL}/api/users/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || "Login failed");
+  }
+
+  localStorage.setItem("agentpay_access_token", data.accessToken);
+  localStorage.setItem("agentpay_user", JSON.stringify(data.user));
+  return data as { accessToken: string; user: AuthUser };
+}
+
+export async function createUser(
+  name: string,
+  email: string,
+  spendingLimit: number
+) {
+  const response = await fetch(`${API_URL}/api/users`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, email, spendingLimit }),
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || "Account creation failed");
+  }
+
+  return data;
+}
+
+export function logoutUser() {
+  localStorage.removeItem("agentpay_access_token");
+  localStorage.removeItem("agentpay_user");
+}
+
+function authHeaders(): Record<string, string> {
+  const token = localStorage.getItem("agentpay_access_token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
 
 
 // ======================================================
 // Product Search
 // ======================================================
 
-export async function searchProducts(
-  message: string
-) {
+export async function searchProducts(message: string): Promise<SearchResponse> {
   const response = await fetch(
     `${API_URL}/api/agent/search`,
     {
@@ -29,7 +86,7 @@ export async function searchProducts(
     );
   }
 
-  return response.json();
+  return response.json() as Promise<SearchResponse>;
 }
 export async function chatWithAgent(message: string) {
   const response = await fetch(
@@ -61,10 +118,7 @@ export async function chatWithAgent(message: string) {
 // Purchase Product
 // ======================================================
 
-export async function purchaseProduct(
-  userId: string,
-  productId: string
-) {
+export async function purchaseProduct(productId: string): Promise<PurchaseResponse> {
   const response = await fetch(
     `${API_URL}/api/agent/purchase`,
     {
@@ -72,10 +126,10 @@ export async function purchaseProduct(
 
       headers: {
         "Content-Type": "application/json",
+        ...authHeaders(),
       },
 
       body: JSON.stringify({
-        userId,
         productId,
       }),
     }
@@ -91,7 +145,7 @@ export async function purchaseProduct(
     );
   }
 
-  return data;
+  return data as PurchaseResponse;
 }
 
 
@@ -103,7 +157,7 @@ export async function verifyPayment(
   razorpayPaymentId: string,
   razorpayOrderId: string,
   razorpaySignature: string
-) {
+): Promise<PaymentVerificationResponse> {
   const response = await fetch(
     `${API_URL}/api/agent/payment/verify`,
     {
@@ -111,6 +165,7 @@ export async function verifyPayment(
 
       headers: {
         "Content-Type": "application/json",
+        ...authHeaders(),
       },
 
       body: JSON.stringify({
@@ -131,5 +186,5 @@ export async function verifyPayment(
     );
   }
 
-  return data;
+  return data as PaymentVerificationResponse;
 }

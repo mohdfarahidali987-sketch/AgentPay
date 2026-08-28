@@ -1,16 +1,14 @@
+import type { GuardrailResult } from "../types";
+
 type GuardrailPanelProps = {
-  amount?: number;
-  decision?: "APPROVED" | "BLOCKED" | null;
-  reason?: string;
+  guardrail: GuardrailResult | null;
 };
 
 function GuardrailPanel({
-  amount,
-  decision,
-  reason,
+  guardrail,
 }: GuardrailPanelProps) {
 
-  const approved = decision === "APPROVED";
+  const approved = guardrail?.decision === "APPROVED";
  
 
   return (
@@ -36,7 +34,7 @@ function GuardrailPanel({
 
         </div>
 
-        {!decision ? (
+        {!guardrail ? (
 
           <div className="mt-6 rounded-xl bg-slate-800/50 p-5 text-center text-slate-500">
             No purchase requested yet.
@@ -45,7 +43,7 @@ function GuardrailPanel({
         ) : (
 
           <>
-            <div className="mt-6 grid gap-4 md:grid-cols-4">
+            <div className="mt-6 grid gap-4 md:grid-cols-5">
 
               <div>
                 <p className="text-sm text-slate-500">
@@ -53,7 +51,7 @@ function GuardrailPanel({
                 </p>
 
                 <p className="mt-1 text-xl font-semibold">
-                  ₹{amount?.toLocaleString()}
+                  ₹{guardrail.requestedAmount.toLocaleString()}
                 </p>
               </div>
 
@@ -63,7 +61,14 @@ function GuardrailPanel({
                 </p>
 
                 <p className="mt-1 text-xl font-semibold">
-                  ₹5,000
+                  ₹{guardrail.spendingLimit.toLocaleString()}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-sm text-slate-500">Remaining</p>
+                <p className="mt-1 text-xl font-semibold">
+                  ₹{guardrail.remainingLimit.toLocaleString()}
                 </p>
               </div>
 
@@ -79,7 +84,7 @@ function GuardrailPanel({
                       : "text-red-400"
                   }`}
                 >
-                  {decision}
+                    {guardrail.decision}
                 </p>
               </div>
 
@@ -102,7 +107,7 @@ function GuardrailPanel({
             </div>
 
             <p className="mt-5 text-sm text-slate-400">
-              {reason}
+              {guardrail.reason}
             </p>
           </>
 

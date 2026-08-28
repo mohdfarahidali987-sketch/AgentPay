@@ -37,10 +37,6 @@ describe("Environment Validation", () => {
       .string()
       .min(1, "RAZORPAY_KEY_SECRET is required"),
 
-    RAZORPAY_WEBHOOK_SECRET: z
-      .string()
-      .min(1, "RAZORPAY_WEBHOOK_SECRET is required"),
-
     CORS_ORIGIN: z
       .string()
       .default("http://localhost:3000"),
@@ -121,7 +117,7 @@ describe("Environment Validation", () => {
       expect(result.success).toBe(false);
 
       if (!result.success) {
-        const error = result.error.errors[0];
+        const error = result.error.issues[0];
         expect(error.path).toContain("DATABASE_URL");
       }
     });
@@ -148,12 +144,11 @@ describe("Environment Validation", () => {
       expect(result.success).toBe(false);
 
       if (!result.success) {
-        const errorPaths = result.error.errors.map((e) =>
+        const errorPaths = result.error.issues.map((e) =>
           e.path.join(".")
         );
         expect(errorPaths).toContain("RAZORPAY_KEY_ID");
         expect(errorPaths).toContain("RAZORPAY_KEY_SECRET");
-        expect(errorPaths).toContain("RAZORPAY_WEBHOOK_SECRET");
       }
     });
   });
@@ -172,7 +167,7 @@ describe("Environment Validation", () => {
       expect(result.success).toBe(false);
 
       if (!result.success) {
-        const error = result.error.errors[0];
+        const error = result.error.issues[0];
         expect(error.message).toContain("URL");
       }
     });
@@ -205,7 +200,7 @@ describe("Environment Validation", () => {
       expect(result.success).toBe(false);
 
       if (!result.success) {
-        const error = result.error.errors.find((e) =>
+        const error = result.error.issues.find((e) =>
           e.path.includes("JWT_SECRET")
         );
         expect(error?.message).toContain("32 characters");

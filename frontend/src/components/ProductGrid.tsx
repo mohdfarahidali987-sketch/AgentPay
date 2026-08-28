@@ -46,6 +46,7 @@ function ProductGrid({
 
           {products.map((product) => (
            <ProductCard
+  key={product.id}
   product={product}
   onBuy={onBuy}
   purchaseLoading={purchaseLoading}

@@ -18,7 +18,7 @@ function IntentPanel({ intent }: IntentPanelProps) {
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-4">
 
         <div className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
           <p className="text-sm text-slate-500">
@@ -28,6 +28,16 @@ function IntentPanel({ intent }: IntentPanelProps) {
           <p className="mt-2 font-semibold text-violet-400">
             {intent?.intent || "Waiting for request"}
           </p>
+        </div>
+
+        <div className="rounded-2xl border border-slate-800 bg-slate-900 p-5">
+          <p className="text-sm text-slate-500">Preference</p>
+          <p className="mt-2 font-semibold">
+            {intent?.preference || "—"}
+          </p>
+          {intent?.response && (
+            <p className="mt-2 text-sm text-slate-500">{intent.response}</p>
+          )}
         </div>
 
         <div className="rounded-2xl border border-slate-800 bg-slate-900 p-5">

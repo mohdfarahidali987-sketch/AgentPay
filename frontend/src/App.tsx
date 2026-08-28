@@ -11,10 +11,12 @@ import {
   purchaseProduct,
   verifyPayment,
 } from "./services/api";
+import type { AuthUser } from "./services/api";
 
 import type {
   Product,
   CommerceIntent,
+  GuardrailResult,
 } from "./types";
 
 
@@ -22,18 +24,16 @@ import type {
 // TYPES
 // =====================================================
 
-type GuardrailState = {
-  amount: number;
-  decision: "APPROVED" | "BLOCKED";
-  reason: string;
-};
-
-
 // =====================================================
 // APP
 // =====================================================
 
 function App() {
+
+  const [user, setUser] = useState<AuthUser | null>(() => {
+    const storedUser = localStorage.getItem("agentpay_user");
+    return storedUser ? JSON.parse(storedUser) as AuthUser : null;
+  });
 
   // ===================================================
   // SEARCH STATE
@@ -62,7 +62,7 @@ function App() {
     useState("");
 
   const [guardrail, setGuardrail] =
-    useState<GuardrailState | null>(null);
+    useState<GuardrailResult | null>(null);
 
   const [paymentSuccess, setPaymentSuccess] =
     useState(false);
@@ -164,19 +164,16 @@ function App() {
 
     try {
 
+      if (!user) {
+        setPurchaseError("Please log in before making a purchase.");
+        return;
+      }
+
       setPurchaseLoading(true);
 
       setPurchaseError("");
 
       setPaymentSuccess(false);
-
-
-      // -----------------------------------------------
-      // Demo user
-      // -----------------------------------------------
-
-      const userId =
-        "cmt62jutw00001hwr42mg29dp";
 
 
       // -----------------------------------------------
@@ -186,7 +183,6 @@ function App() {
 
       const data =
         await purchaseProduct(
-          userId,
           product.id
         );
 
@@ -203,15 +199,14 @@ function App() {
       ) {
 
         setGuardrail({
-          amount:
-            product.price,
-
-          decision:
-            "BLOCKED",
-
-          reason:
-            data.guardrail?.reason ||
-            "Purchase was blocked by the spending guardrail.",
+          ...(data.guardrail || {
+            currentSpending: 0,
+            requestedAmount: product.price,
+            spendingLimit: 0,
+            remainingLimit: 0,
+          }),
+          decision: "BLOCKED",
+          reason: data.guardrail?.reason || "Purchase was blocked by the spending guardrail.",
         });
 
 
@@ -230,14 +225,7 @@ function App() {
       // -----------------------------------------------
 
       setGuardrail({
-        amount:
-          data.order.amount,
-
-        decision:
-          data.guardrail.decision,
-
-        reason:
-          data.guardrail.reason,
+        ...data.guardrail,
       });
 
 
@@ -308,10 +296,10 @@ function App() {
         prefill: {
 
           name:
-            "Farahid",
+            user.name,
 
           email:
-            "farahid@test.com",
+            user.email,
 
         },
 
@@ -402,15 +390,11 @@ setPaymentInfo({
     product.name,
 });
 
-setGuardrail({
-  amount:
-    verification.order.amount,
-
+setGuardrail((previous) => previous ? {
+  ...previous,
   decision: "APPROVED",
-
-  reason:
-    "Payment completed and verified successfully.",
-});
+  reason: "Payment completed and verified successfully.",
+} : previous);
 
 setPurchaseError("");
 
@@ -512,7 +496,11 @@ setPurchaseError("");
           NAVBAR
       ================================================= */}
 
-      <Navbar />
+      <Navbar
+        user={user}
+        onLogin={setUser}
+        onLogout={() => setUser(null)}
+      />
 
 
       {/* =================================================
@@ -775,22 +763,7 @@ setPurchaseError("");
             PURCHASE GUARDRAIL
         ================================================= */}
 
-        <GuardrailPanel
-
-          amount={
-            guardrail?.amount
-          }
-
-          decision={
-            guardrail?.decision ??
-            null
-          }
-
-          reason={
-            guardrail?.reason
-          }
-
-        />
+        <GuardrailPanel guardrail={guardrail} />
 
       </main>
 

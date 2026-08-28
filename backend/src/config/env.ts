@@ -34,10 +34,6 @@ const envSchema = z.object({
     .string()
     .min(1, "RAZORPAY_KEY_SECRET is required"),
 
-  RAZORPAY_WEBHOOK_SECRET: z
-    .string()
-    .min(1, "RAZORPAY_WEBHOOK_SECRET is required"),
-
   CORS_ORIGIN: z
     .string()
     .default("http://localhost:3000"),
@@ -56,7 +52,7 @@ export function validateEnv(): Env {
   } catch (error) {
     if (error instanceof z.ZodError) {
       console.error("❌ Environment validation failed:");
-      error.errors.forEach((err) => {
+      error.issues.forEach((err) => {
         console.error(`  • ${err.path.join(".")}: ${err.message}`);
       });
       process.exit(1);
