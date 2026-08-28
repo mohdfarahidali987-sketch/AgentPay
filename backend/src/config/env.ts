@@ -42,6 +42,8 @@ const envSchema = z.object({
     .string()
     .min(32, "JWT_SECRET must be at least 32 characters")
     .optional(),
+
+  GOOGLE_CLIENT_ID: z.string().min(1).optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

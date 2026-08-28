@@ -13,11 +13,11 @@ export type AuthUser = {
   spendingLimit: number;
 };
 
-export async function loginUser(email: string) {
+export async function loginUser(email: string, password: string) {
   const response = await fetch(`${API_URL}/api/users/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email }),
+    body: JSON.stringify({ email, password }),
   });
 
   const data = await response.json();
@@ -33,12 +33,13 @@ export async function loginUser(email: string) {
 export async function createUser(
   name: string,
   email: string,
+  password: string,
   spendingLimit: number
 ) {
   const response = await fetch(`${API_URL}/api/users`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, email, spendingLimit }),
+    body: JSON.stringify({ name, email, password, spendingLimit }),
   });
 
   const data = await response.json();
@@ -47,6 +48,23 @@ export async function createUser(
   }
 
   return data;
+}
+
+export async function loginWithGoogle(credential: string) {
+  const response = await fetch(`${API_URL}/api/users/google`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ credential }),
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.message || "Google login failed");
+  }
+
+  localStorage.setItem("agentpay_access_token", data.accessToken);
+  localStorage.setItem("agentpay_user", JSON.stringify(data.user));
+  return data as { accessToken: string; user: AuthUser };
 }
 
 export function logoutUser() {

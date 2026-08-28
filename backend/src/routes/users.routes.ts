@@ -1,7 +1,9 @@
 import { Router } from "express";
 import prisma from "../lib/prisma";
-import { signAccessToken } from "../lib/auth";
+import { hashPassword, signAccessToken, verifyPassword } from "../lib/auth";
 import { validateBody, schemas } from "../middleware/validation.middleware";
+import { OAuth2Client } from "google-auth-library";
+import { env } from "../config/env";
 
 const router = Router();
 
@@ -11,7 +13,7 @@ router.post(
   validateBody(schemas.createUser),
   async (req, res) => {
     try {
-      const { name, email, spendingLimit } = req.body;
+      const { name, email, password, spendingLimit } = req.body;
 
       const limit =
         spendingLimit === undefined
@@ -33,6 +35,7 @@ router.post(
       data: {
         name: name.trim(),
         email: email.trim().toLowerCase(),
+        passwordHash: hashPassword(password),
         spendingLimit: limit,
       },
     });
@@ -55,7 +58,7 @@ router.post(
   validateBody(schemas.login),
   async (req, res) => {
     try {
-      const { email } = req.body;
+      const { email, password } = req.body;
 
       const user = await prisma.user.findUnique({
         where: {
@@ -63,9 +66,9 @@ router.post(
         },
       });
 
-      if (!user) {
-        return res.status(404).json({
-          message: "User not found",
+      if (!user || !user.passwordHash || !verifyPassword(password, user.passwordHash)) {
+        return res.status(401).json({
+          message: "Invalid email or password",
         });
       }
 
@@ -119,5 +122,60 @@ router.get("/:id", async (req, res) => {
     });
   }
 });
+
+router.post(
+  "/google",
+  validateBody(schemas.googleLogin),
+  async (req, res) => {
+    try {
+      if (!env.GOOGLE_CLIENT_ID) {
+        return res.status(503).json({
+          message: "Google login is not configured",
+        });
+      }
+
+      const client = new OAuth2Client(env.GOOGLE_CLIENT_ID);
+      const ticket = await client.verifyIdToken({
+        idToken: req.body.credential,
+        audience: env.GOOGLE_CLIENT_ID,
+      });
+      const googleUser = ticket.getPayload();
+
+      if (!googleUser?.sub || !googleUser.email || !googleUser.email_verified) {
+        return res.status(401).json({ message: "Google account could not be verified" });
+      }
+
+      let user = await prisma.user.findUnique({
+        where: { googleSubject: googleUser.sub },
+      });
+
+      if (!user) {
+        user = await prisma.user.upsert({
+          where: { email: googleUser.email.toLowerCase() },
+          update: { googleSubject: googleUser.sub },
+          create: {
+            name: googleUser.name || googleUser.email.split("@")[0],
+            email: googleUser.email.toLowerCase(),
+            googleSubject: googleUser.sub,
+          },
+        });
+      }
+
+      const token = signAccessToken({ userId: user.id, email: user.email });
+      return res.json({
+        accessToken: token,
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          spendingLimit: user.spendingLimit,
+        },
+      });
+    } catch (error) {
+      console.error("Google login failed:", error);
+      return res.status(401).json({ message: "Google login failed" });
+    }
+  }
+);
 
 export default router;

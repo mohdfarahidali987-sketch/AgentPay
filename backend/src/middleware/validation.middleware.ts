@@ -59,12 +59,22 @@ export const schemas = {
       .number()
       .nonnegative("spendingLimit must be non-negative")
       .optional(),
+    password: z
+      .string()
+      .min(8, "password must be at least 8 characters"),
   }),
 
   login: z.object({
     email: z
       .string()
       .email("email must be valid"),
+    password: z
+      .string()
+      .min(1, "password is required"),
+  }),
+
+  googleLogin: z.object({
+    credential: z.string().min(1, "Google credential is required"),
   }),
 
   // Agent schemas

@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from "react";
-import { createUser, loginUser, logoutUser } from "../services/api";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { createUser, loginUser, loginWithGoogle, logoutUser } from "../services/api";
 import type { AuthUser } from "../services/api";
 
 type NavbarProps = {
@@ -8,14 +8,56 @@ type NavbarProps = {
   onLogout: () => void;
 };
 
+declare global {
+  interface Window {
+    google?: {
+      accounts: {
+        id: {
+          initialize: (options: { client_id: string; callback: (response: { credential: string }) => void }) => void;
+          renderButton: (element: HTMLElement, options: { theme: string; size: string; width: number }) => void;
+        };
+      };
+    };
+  }
+}
+
 function Navbar({ user, onLogin, onLogout }: NavbarProps) {
   const [showLogin, setShowLogin] = useState(false);
   const [isSignup, setIsSignup] = useState(false);
   const [name, setName] = useState("");
   const [spendingLimit, setSpendingLimit] = useState("5000");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const googleButtonRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    if (!showLogin || isSignup || !clientId || !window.google || !googleButtonRef.current) return;
+
+    window.google.accounts.id.initialize({
+      client_id: clientId,
+      callback: async ({ credential }) => {
+        setLoading(true);
+        setError("");
+        try {
+          const result = await loginWithGoogle(credential);
+          onLogin(result.user);
+          setShowLogin(false);
+        } catch (googleError) {
+          setError(googleError instanceof Error ? googleError.message : "Google login failed");
+        } finally {
+          setLoading(false);
+        }
+      },
+    });
+    window.google.accounts.id.renderButton(googleButtonRef.current, {
+      theme: "outline",
+      size: "large",
+      width: 280,
+    });
+  }, [isSignup, onLogin, showLogin]);
 
   const handleLogin = async (event: FormEvent) => {
     event.preventDefault();
@@ -24,13 +66,14 @@ function Navbar({ user, onLogin, onLogout }: NavbarProps) {
 
     try {
       if (isSignup) {
-        await createUser(name, email, Number(spendingLimit));
+        await createUser(name, email, password, Number(spendingLimit));
       }
-      const result = await loginUser(email);
+      const result = await loginUser(email, password);
       onLogin(result.user);
       setShowLogin(false);
       setEmail("");
       setName("");
+      setPassword("");
     } catch (loginError) {
       setError(loginError instanceof Error ? loginError.message : "Login failed");
     } finally {
@@ -104,6 +147,15 @@ function Navbar({ user, onLogin, onLogout }: NavbarProps) {
               placeholder="Email address"
               className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm outline-none focus:border-violet-500"
             />
+            <input
+              type="password"
+              required
+              minLength={8}
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder="Password"
+              className="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm outline-none focus:border-violet-500"
+            />
             {isSignup && (
               <input
                 type="number"
@@ -122,6 +174,16 @@ function Navbar({ user, onLogin, onLogout }: NavbarProps) {
             <button type="button" className="w-full text-sm text-slate-400 hover:text-white" onClick={() => { setIsSignup(!isSignup); setError(""); }}>
               {isSignup ? "Already have an account? Login" : "New here? Create an account"}
             </button>
+            {!isSignup && (
+              <>
+                <div className="flex items-center gap-2 text-xs text-slate-500"><span className="h-px flex-1 bg-slate-700" />or<span className="h-px flex-1 bg-slate-700" /></div>
+                {import.meta.env.VITE_GOOGLE_CLIENT_ID ? (
+                  <div ref={googleButtonRef} className="flex justify-center" />
+                ) : (
+                  <p className="text-center text-xs text-slate-500">Google login requires VITE_GOOGLE_CLIENT_ID.</p>
+                )}
+              </>
+            )}
           </form>
         </div>
       )}
