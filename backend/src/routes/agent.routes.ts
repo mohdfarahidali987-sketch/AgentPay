@@ -516,22 +516,20 @@ router.get(
  */
 router.get(
   "/orders/:orderId",
+  authMiddleware,
   async (req, res) => {
     try {
-      const {
-        orderId,
-      } = req.params;
+   const { orderId } = req.params;
 
-      if (
-        !orderId ||
-        !orderId.trim()
-      ) {
-        return res.status(400).json({
-          message:
-            "orderId is required",
-        });
-      }
-
+if (
+  !orderId ||
+  Array.isArray(orderId) ||
+  !orderId.trim()
+) {
+  return res.status(400).json({
+    message: "orderId is required",
+  });
+}
       const order =
         await prisma.order.findUnique({
           where: {
@@ -551,13 +549,17 @@ router.get(
             },
           },
         });
+        if (!order) {
+  return res.status(404).json({
+    message: "Order not found",
+  });
+}
 
-      if (!order) {
-        return res.status(404).json({
-          message:
-            "Order not found",
-        });
-      }
+    if (order.userId !== req.user?.userId) {
+  return res.status(403).json({
+    message: "You are not allowed to access this order",
+  });
+}
 
       return res.json({
         order,
@@ -585,6 +587,7 @@ router.get(
  */
 router.post(
   "/payment/verify",
+  authMiddleware,
   async (req, res) => {
     try {
       const {
@@ -661,6 +664,11 @@ router.post(
             "Internal order not found",
         });
       }
+      if (order.userId !== req.user?.userId) {
+  return res.status(403).json({
+    message: "You are not allowed to verify this order",
+  });
+}
 
 
       // ---------------------------------------------

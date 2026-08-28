@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import Navbar from "./components/Navbar";
-import AgentChat from "./components/Agentchat";
+import AgentChat from "./components/Agentchats";
 import IntentPanel from "./components/IntentPanel";
 import ProductGrid from "./components/ProductGrid";
 import GuardrailPanel from "./components/GuardRailPanel";
