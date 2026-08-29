@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { Logger, LogContext } from "../src/lib/logger";
+import { describe, it, expect, vi, beforeEach , afterEach} from "vitest";
+import { Logger, LogContext } from "../logger.js";
 
 describe("Logger", () => {
   let logger: Logger;

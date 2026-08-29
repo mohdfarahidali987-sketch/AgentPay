@@ -4,7 +4,7 @@ import {
   verifyAccessToken,
   extractTokenFromHeader,
   AuthPayload,
-} from "../src/lib/auth";
+} from "../auth.js";
 
 describe("Auth Utils", () => {
   describe("JWT Token Operations", () => {

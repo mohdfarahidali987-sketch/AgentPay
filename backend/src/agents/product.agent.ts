@@ -5,7 +5,7 @@ import {
 import {
   rankProducts,
   type RankingPreference,
-} from "../services/product-ranking";
+} from "../services/product-ranking.js";
 
 export async function findProducts(
   query: string,

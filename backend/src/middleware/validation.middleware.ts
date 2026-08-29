@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { z, ZodIssue } from "zod";
-import { logger } from "../lib/logger";
+import { logger } from "../lib/logger.js";
 
 /**
  * Create a validation middleware for request body

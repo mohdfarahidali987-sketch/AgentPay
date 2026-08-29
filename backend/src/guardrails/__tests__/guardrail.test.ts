@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import type { GuardrailResult } from "../src/guardrails/guardrail.service";
+import type { GuardrailResult } from "../guardrail.service.js";
 
 /**
  * Test the guardrail logic without Prisma

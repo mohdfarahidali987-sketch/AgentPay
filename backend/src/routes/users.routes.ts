@@ -1,9 +1,9 @@
 import { Router } from "express";
-import prisma from "../lib/prisma";
-import { hashPassword, signAccessToken, verifyPassword } from "../lib/auth";
-import { validateBody, schemas } from "../middleware/validation.middleware";
+import prisma from "../lib/prisma.js";
+import { hashPassword, signAccessToken, verifyPassword } from "../lib/auth.js";
+import { validateBody, schemas } from "../middleware/validation.middleware.js";
 import { OAuth2Client } from "google-auth-library";
-import { env } from "../config/env";
+import { env } from "../config/env.js";
 
 const router = Router();
 

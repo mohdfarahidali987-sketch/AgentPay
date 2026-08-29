@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { authMiddleware } from "../middleware/auth.middleware";
-import { validateBody, schemas } from "../middleware/validation.middleware";
-import { createRazorpayOrder } from "../payments/razorpay.service";
+import { authMiddleware } from "../middleware/auth.middleware.js";
+import { validateBody, schemas } from "../middleware/validation.middleware.js";
+import { createRazorpayOrder } from "../payments/razorpay.service.js";
 
 const router = Router();
 

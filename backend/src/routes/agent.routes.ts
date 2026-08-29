@@ -1,32 +1,32 @@
 import { Router } from "express";
 
-import { authMiddleware } from "../middleware/auth.middleware";
-import { validateBody, schemas } from "../middleware/validation.middleware";
+import { authMiddleware } from "../middleware/auth.middleware.js";
+import { validateBody, schemas } from "../middleware/validation.middleware.js";
 import {
   understandCommerceIntent,
-} from "../agents/supervisor.agent";
+} from "../agents/supervisor.agent.js";
 
 import {
   findProducts,
-} from "../agents/product.agent";
+} from "../agents/product.agent.js";
 
 import {
   createOrderForProduct,
-} from "../agents/order.agent";
+} from "../agents/order.agent.js";
 
 import {
   checkPurchaseGuardrail,
-} from "../guardrails/guardrail.service";
+} from "../guardrails/guardrail.service.js";
 
 import {
   createAuditAction,
   getUserAuditActions,
-} from "../services/audit.service";
+} from "../services/audit.service.js";
 
-import prisma from "../lib/prisma";
+import prisma from "../lib/prisma.js";
 import {
   verifyRazorpayPayment,
-} from "../payments/razorpay.service";
+} from "../payments/razorpay.service.js";
 
 const router = Router();
 

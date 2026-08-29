@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { z } from "zod";
-import { schemas } from "../validation.middleware";
+import { schemas } from "../validation.middleware.js";
 
 describe("Request Validation Schemas", () => {
   describe("User Schemas", () => {

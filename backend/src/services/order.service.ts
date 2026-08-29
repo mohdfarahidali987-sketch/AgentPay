@@ -1,12 +1,12 @@
-import prisma from "../lib/prisma";
+import prisma from "../lib/prisma.js";
 
 import {
   checkPurchaseGuardrail,
-} from "../guardrails/guardrail.service";
+} from "../guardrails/guardrail.service.js";
 
 import {
   createRazorpayOrder,
-} from "../payments/razorpay.service";
+} from "../payments/razorpay.service.js";
 
 
 export async function purchaseProduct(

@@ -2,17 +2,15 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 
-// ✅ Validate environment first
-import { env } from "./config/env";
-import { logger } from "./lib/logger";
-import { requestLoggingMiddleware } from "./middleware/logging.middleware";
-import { errorHandlingMiddleware } from "./middleware/error.middleware";
+import { env } from "./config/env.js";
+import { logger } from "./lib/logger.js";
+import { requestLoggingMiddleware } from "./middleware/logging.middleware.js";
+import { errorHandlingMiddleware } from "./middleware/error.middleware.js";
 
 import productsRouter from "./routes/product.routes.js";
-import agentRouter from "./routes/agent.routes";
-import usersRouter from "./routes/users.routes";
-import paymentRoutes from "./routes/payment.routes";
-
+import agentRouter from "./routes/agent.routes.js";
+import usersRouter from "./routes/users.routes.js";
+import paymentRoutes from "./routes/payment.routes.js";
 const app = express();
 
 app.use(cors());

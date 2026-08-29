@@ -1,4 +1,4 @@
-import { purchaseProduct } from "../services/order.service";
+import { purchaseProduct } from "../services/order.service.js";
 
 export async function createOrderForProduct(
   userId: string,

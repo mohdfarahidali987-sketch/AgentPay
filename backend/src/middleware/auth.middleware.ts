@@ -3,7 +3,7 @@ import {
   extractTokenFromHeader,
   verifyAccessToken,
   AuthPayload,
-} from "../lib/auth";
+} from "../lib/auth.js";
 
 /**
  * Extend Express Request to include user
