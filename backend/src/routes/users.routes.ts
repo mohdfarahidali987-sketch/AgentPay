@@ -52,7 +52,7 @@ router.post(
   }
 });
 
-// Login endpoint - Get JWT token
+// Login endpoint  , Get JWT token
 router.post(
   "/login",
   validateBody(schemas.login),

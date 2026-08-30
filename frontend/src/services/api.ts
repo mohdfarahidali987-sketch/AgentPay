@@ -78,9 +78,9 @@ function authHeaders(): Record<string, string> {
 }
 
 
-// ======================================================
+ 
 // Product Search
-// ======================================================
+ 
 
 export async function searchProducts(message: string): Promise<SearchResponse> {
   const response = await fetch(
@@ -132,9 +132,9 @@ export async function chatWithAgent(message: string) {
 }
 
 
-// ======================================================
+ 
 // Purchase Product
-// ======================================================
+ 
 export async function purchaseProduct(
   productId: string
 ): Promise<PurchaseResponse> {
@@ -174,9 +174,9 @@ export async function purchaseProduct(
 }
 
 
-// ======================================================
+ 
 // Verify Razorpay Payment
-// ======================================================
+ 
 
 export async function verifyPayment(
   razorpayPaymentId: string,

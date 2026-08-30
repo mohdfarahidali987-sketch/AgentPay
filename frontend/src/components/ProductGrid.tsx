@@ -7,6 +7,7 @@ type ProductGridProps = {
 
   // ID of the product currently being purchased.
   // null means no purchase is currently processing.
+  
   processingProductId: string | null;
 };
 
@@ -18,9 +19,9 @@ function ProductGrid({
   return (
     <section className="mt-16">
 
-      {/* ================================================= */}
+ 
       {/* SECTION HEADER */}
-      {/* ================================================= */}
+ 
 
       <div className="mb-7 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
 
@@ -64,9 +65,9 @@ function ProductGrid({
       </div>
 
 
-      {/* ================================================= */}
+   
       {/* EMPTY STATE */}
-      {/* ================================================= */}
+     
 
       {products.length === 0 ? (
 
@@ -102,9 +103,9 @@ function ProductGrid({
 
         <>
 
-          {/* ================================================= */}
+       
           {/* RANKING CONTEXT */}
-          {/* ================================================= */}
+    
 
           <div className="mb-5 flex items-center gap-2 text-xs text-slate-600">
 
@@ -119,10 +120,8 @@ function ProductGrid({
           </div>
 
 
-          {/* ================================================= */}
-          {/* PRODUCT CARDS */}
-          {/* ================================================= */}
-
+       
+          {/* PRODUCT CARDS */} 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
 
             {products.map((product) => (

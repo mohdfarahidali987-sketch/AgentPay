@@ -30,20 +30,11 @@ import {
 
 const router = Router();
 
-/**
- * =========================================================
- * POST /api/agent/understand
- * =========================================================
- *
- * Understand a user's commerce request
- * using the Supervisor Agent.
- *
- * User message
- *      ↓
- * Supervisor Agent
- *      ↓
- * Commerce Intent
- */
+ 
+ // POST /api/agent/understand
+ 
+ 
+ 
 router.post(
   "/understand",
   validateBody(schemas.understandIntent),
@@ -80,21 +71,11 @@ router.post(
 });
 
 
-/**
- * =========================================================
- * POST /api/agent/search
- * =========================================================
- *
- * AI-powered product search.
- *
- * User message
- *      ↓
- * Supervisor Agent
- *      ↓
- * Product Agent
- *      ↓
- * PostgreSQL
- */
+
+  
+ // POST /api/agent/search
+ 
+ 
 router.post(
   "/search",
   validateBody(schemas.searchProducts),
@@ -149,26 +130,10 @@ router.post(
 });
 
 
-/**
- * =========================================================
- * POST /api/agent/guardrail
- * =========================================================
- *
- * Check whether a purchase is allowed.
- *
- * This endpoint is useful for:
- * - Testing the guardrail independently
- * - Demonstrating the safety policy
- * - Showing audit logging
- *
- * Purchase Request
- *      ↓
- * Guardrail Engine
- *      ↓
- * APPROVED / BLOCKED
- *      ↓
- * Audit Log
- */
+ 
+ // POST /api/agent/guardrail
+ 
+ 
 router.post(
   "/guardrail",
   authMiddleware,
@@ -179,7 +144,7 @@ router.post(
         amount,
       } = req.body;
 
-      // ✅ Get userId from JWT token
+      //  Get userId from JWT token
       const userId = req.user?.userId;
 
       if (!userId) {
@@ -236,51 +201,11 @@ router.post(
   }
 );
 
-
-/**
- * =========================================================
- * POST /api/agent/purchase
- * =========================================================
- *
- * Complete AI purchase flow.
- *
- * User
- *   ↓
- * Order Agent
- *   ↓
- * Product validation
- *   ↓
- * Stock validation
- *   ↓
- * Spending Guardrail
- *   ↓
- * APPROVED?
- *   │
- *   ├── BLOCKED
- *   │      ↓
- *   │   Audit Log
- *   │
- *   └── APPROVED
- *          ↓
- *      Create Internal Order
- *          ↓
- *      Create Razorpay Order
- *          ↓
- *      Save Razorpay Order ID
- *          ↓
- *      Audit Log
- *
- * IMPORTANT:
- * The guardrail is NOT checked here directly.
- *
- * createOrderForProduct()
- *       ↓
- * purchaseProduct()
- *       ↓
- * checkPurchaseGuardrail()
- *
- * This prevents checking the guardrail twice.
- */
+ 
+ //POST /api/agent/purchase
+ 
+ 
+ 
 router.post(
   "/purchase",
   authMiddleware,
@@ -290,7 +215,7 @@ router.post(
         productId,
       } = req.body;
 
-      // ✅ Get userId from JWT token
+      // Get userId from JWT token
       const userId = req.user?.userId;
 
       if (!userId) {
@@ -299,9 +224,9 @@ router.post(
         });
       }
 
-      /*
-       * Validate request body.
-       */
+      
+       //Validate request body.
+       
       if (
         typeof productId !== "string" ||
         !productId.trim()
@@ -312,16 +237,10 @@ router.post(
         });
       }
 
-      /*
-       * Order Agent handles:
-       *
-       * 1. Product lookup
-       * 2. Stock check
-       * 3. Guardrail check
-       * 4. Internal order creation
-       * 5. Razorpay order creation
-       * 6. Razorpay order ID persistence
-       */
+  
+       // Order Agent handles:
+        
+     
       const result =
         await createOrderForProduct(
           userId,
@@ -331,6 +250,7 @@ router.post(
       /*
        * Guardrail blocked the purchase.
        */
+
     if (
   !result.success ||
   result.guardrail.decision === "BLOCKED" ||
@@ -351,12 +271,9 @@ router.post(
     razorpay: null,
   });
 }
-      /*
-       * Purchase was approved.
-       *
-       * Internal order has already been
-       * created by order.service.ts.
-       */
+      
+       //Purchase was approved.
+   
       await createAuditAction({
         userId,
 
@@ -452,14 +369,10 @@ router.post(
 );
 
 
-/**
- * =========================================================
- * GET /api/agent/audit/:userId
- * =========================================================
- *
- * Get complete AI action history
- * for a user.
- */
+ 
+ // GET /api/agent/audit/:userId
+ 
+ 
 router.get(
   "/audit/:userId",
   async (req, res) => {
@@ -502,18 +415,10 @@ router.get(
 );
 
 
-/**
- * =========================================================
- * GET /api/agent/orders/:orderId
- * =========================================================
- *
- * Get complete order information.
- *
- * Includes:
- * - Product
- * - User
- * - Agent actions / audit trail
- */
+
+ // GET /api/agent/orders/:orderId
+ 
+ 
 router.get(
   "/orders/:orderId",
   authMiddleware,
@@ -579,12 +484,8 @@ if (
   }
 );
 
-/**
- * POST /api/agent/payment/verify
- *
- * Verify Razorpay payment signature
- * and mark the internal order as PAID.
- */
+ // POST /api/agent/payment/verify
+ 
 router.post(
   "/payment/verify",
   authMiddleware,
@@ -596,9 +497,9 @@ router.post(
         razorpaySignature,
       } = req.body;
 
-      // ---------------------------------------------
+    
       // Validate request
-      // ---------------------------------------------
+ 
 
       if (
         typeof razorpayPaymentId !== "string" ||
@@ -617,9 +518,9 @@ router.post(
       }
 
 
-      // ---------------------------------------------
+ 
       // Verify Razorpay signature
-      // ---------------------------------------------
+ 
 
       const isValid =
         verifyRazorpayPayment(
@@ -629,9 +530,9 @@ router.post(
         );
 
 
-      // ---------------------------------------------
+     
       // Invalid signature
-      // ---------------------------------------------
+    
 
       if (!isValid) {
         return res.status(400).json({
@@ -641,9 +542,9 @@ router.post(
       }
 
 
-      // ---------------------------------------------
+ 
       // Find our internal order
-      // ---------------------------------------------
+   
 
       const order =
         await prisma.order.findFirst({
@@ -671,9 +572,9 @@ router.post(
 }
 
 
-      // ---------------------------------------------
+     
       // Prevent duplicate processing
-      // ---------------------------------------------
+     
 
       if (order.status === "PAID") {
         return res.json({
@@ -687,9 +588,9 @@ router.post(
 
    
 
-// ---------------------------------------------
+ 
 // Atomically update stock + order
-// ---------------------------------------------
+ 
 
 const updatedOrder =
   await prisma.$transaction(async (tx) => {
@@ -754,9 +655,9 @@ const updatedOrder =
   });
 
 
-      // ---------------------------------------------
+ 
       // Create audit record
-      // ---------------------------------------------
+     
 
       await createAuditAction({
         userId: order.userId,
@@ -775,9 +676,9 @@ const updatedOrder =
       });
 
 
-      // ---------------------------------------------
+ 
       // Response
-      // ---------------------------------------------
+      
 
       return res.json({
         success: true,

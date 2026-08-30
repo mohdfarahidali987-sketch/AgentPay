@@ -7,10 +7,9 @@ const razorpay = new Razorpay({
 });
 
 
-// ======================================================
+ 
 // CREATE RAZORPAY ORDER
-// ======================================================
-
+ 
 export async function createRazorpayOrder(
   amount: number,
   receipt: string
@@ -26,9 +25,9 @@ export async function createRazorpayOrder(
 }
 
 
-// ======================================================
+ 
 // VERIFY RAZORPAY PAYMENT
-// ======================================================
+ 
 
 export function verifyRazorpayPayment(
   razorpayOrderId: string,

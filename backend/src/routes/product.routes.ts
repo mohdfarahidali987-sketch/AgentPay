@@ -7,16 +7,9 @@ import {
 
 const router = Router();
 
-/**
- * GET /api/products
- *
- * Get all products or search products.
- *
- * Examples:
- * /api/products
- * /api/products?search=mouse
- * /api/products?search=laptop&maxPrice=60000
- */
+ 
+ // Get all products or search products.
+ 
 router.get("/", async (req, res) => {
   try {
     const search = req.query.search as string | undefined;

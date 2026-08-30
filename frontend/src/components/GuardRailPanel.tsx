@@ -23,9 +23,9 @@ function GuardrailPanel({
   return (
     <section className="mt-16">
 
-      {/* ================================================= */}
+     
       {/* HEADER */}
-      {/* ================================================= */}
+    
 
       <div className="mb-6 flex items-end justify-between">
 
@@ -55,9 +55,9 @@ function GuardrailPanel({
       </div>
 
 
-      {/* ================================================= */}
+ 
       {/* MAIN CARD */}
-      {/* ================================================= */}
+    
 
       <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 shadow-xl shadow-black/10">
 
@@ -68,8 +68,8 @@ function GuardrailPanel({
             !guardrail
               ? "border-slate-800"
               : approved
-                ? "border-emerald-500/10 bg-emerald-500/[0.02]"
-                : "border-red-500/10 bg-red-500/[0.02]"
+                ? "border-emerald-500/10 bg-emerald-500/0.02"
+                : "border-red-500/10 bg-red-500/0.02"
           }`}
         >
 
@@ -136,9 +136,9 @@ function GuardrailPanel({
         </div>
 
 
-        {/* ================================================= */}
+   
         {/* EMPTY STATE */}
-        {/* ================================================= */}
+        
 
         {!guardrail ? (
 
@@ -162,9 +162,9 @@ function GuardrailPanel({
         ) : (
 
           <>
-            {/* ================================================= */}
+   
             {/* FINANCIAL DETAILS */}
-            {/* ================================================= */}
+            
 
             <div className="grid gap-px bg-slate-800 sm:grid-cols-2 lg:grid-cols-4">
 
@@ -253,9 +253,9 @@ function GuardrailPanel({
             </div>
 
 
-            {/* ================================================= */}
+        
             {/* BUDGET PROGRESS */}
-            {/* ================================================= */}
+      
 
             <div className="border-t border-slate-800 px-5 py-5">
 
@@ -289,9 +289,9 @@ function GuardrailPanel({
             </div>
 
 
-            {/* ================================================= */}
+           
             {/* DECISION */}
-            {/* ================================================= */}
+            
 
             <div className="border-t border-slate-800 px-5 py-5">
 
@@ -342,9 +342,9 @@ function GuardrailPanel({
             </div>
 
 
-            {/* ================================================= */}
+ 
             {/* SECURITY PIPELINE */}
-            {/* ================================================= */}
+ 
 
             <div className="border-t border-slate-800 px-5 py-4">
 

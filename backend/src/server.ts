@@ -23,7 +23,7 @@ app.use(
 );
 app.use(express.json());
 
-// ✅ Add request logging middleware
+// Add request logging middleware
 app.use(requestLoggingMiddleware);
 
 app.get("/health", (_req, res) => {
@@ -39,7 +39,7 @@ app.use("/api/agent", agentRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/payment", paymentRoutes);
 
-// ✅ Add global error handling middleware
+// Add global error handling middleware
 app.use(errorHandlingMiddleware);
 
 const PORT = env.PORT;

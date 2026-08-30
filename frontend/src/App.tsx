@@ -19,14 +19,7 @@ import type {
   GuardrailResult,
 } from "./types";
 
-
-// =====================================================
-// TYPES
-// =====================================================
-
-// =====================================================
-// APP
-// =====================================================
+ 
 
 function App() {
 
@@ -35,9 +28,9 @@ function App() {
     return storedUser ? JSON.parse(storedUser) as AuthUser : null;
   });
 
-  // ===================================================
+ 
   // SEARCH STATE
-  // ===================================================
+ 
 
   const [products, setProducts] =
     useState<Product[]>([]);
@@ -51,9 +44,9 @@ function App() {
     useState("");
 
 
-  // ===================================================
+   
   // PURCHASE STATE
-  // ===================================================
+  
 
  const [processingProductId, setProcessingProductId] =
   useState<string | null>(null);
@@ -77,9 +70,8 @@ function App() {
   } | null>(null);
 
 
-  // ===================================================
-  // PRODUCT SEARCH
-  // ===================================================
+ // PRODUCT SEARCH
+      
 
   const handleSearch = async (
     searchMessage: string
@@ -102,9 +94,9 @@ function App() {
       setPaymentInfo(null);
 
 
-      // -----------------------------------------------
+ 
       // Ask Supervisor + Product Agent
-      // -----------------------------------------------
+   
 
       const data =
         await searchProducts(
@@ -112,18 +104,18 @@ function App() {
         );
 
 
-      // -----------------------------------------------
+    
       // Update AI intent
-      // -----------------------------------------------
+       
 
       setIntent(
         data.intent
       );
 
 
-      // -----------------------------------------------
+     
       // Update products
-      // -----------------------------------------------
+      
 
       setProducts(
         data.products || []
@@ -154,9 +146,9 @@ function App() {
   };
 
 
-  // ===================================================
+ 
   // PURCHASE PRODUCT
-  // ===================================================
+ 
 
   const handleBuy = async (
     product: Product
@@ -176,10 +168,9 @@ function App() {
       setPaymentSuccess(false);
 
 
-      // -----------------------------------------------
-      // STEP 1
+      
       // Create purchase through backend
-      // -----------------------------------------------
+      
 
       const data =
         await purchaseProduct(
@@ -187,10 +178,9 @@ function App() {
         );
 
 
-      // -----------------------------------------------
-      // STEP 2
+ 
       // Check guardrail
-      // -----------------------------------------------
+ 
 
       if (
         !data.guardrail ||
@@ -219,20 +209,19 @@ function App() {
       }
 
 
-      // -----------------------------------------------
-      // STEP 3
+    
+    
       // Show guardrail approval
-      // -----------------------------------------------
+   
 
       setGuardrail({
         ...data.guardrail,
       });
 
 
-      // -----------------------------------------------
-      // STEP 4
+ 
       // Make sure Razorpay order exists
-      // -----------------------------------------------
+      
 
       if (
         !data.razorpay ||
@@ -245,10 +234,9 @@ function App() {
       }
 
 
-      // -----------------------------------------------
-      // STEP 5
+      
       // Get Razorpay public key
-      // -----------------------------------------------
+       
 
       const razorpayKey =
         import.meta.env
@@ -263,10 +251,9 @@ function App() {
       }
 
 
-      // -----------------------------------------------
-      // STEP 6
+      
       // Razorpay Checkout options
-      // -----------------------------------------------
+      
 
       const options: RazorpayOptions = {
 
@@ -289,9 +276,9 @@ function App() {
           data.razorpay.orderId,
 
 
-        // ---------------------------------------------
+        
         // Customer information
-        // ---------------------------------------------
+         
 
         prefill: {
 
@@ -304,9 +291,9 @@ function App() {
         },
 
 
-        // ---------------------------------------------
+ 
         // Checkout theme
-        // ---------------------------------------------
+      
 
         theme: {
 
@@ -316,9 +303,9 @@ function App() {
         },
 
 
-        // ---------------------------------------------
+        
         // PAYMENT SUCCESS
-        // ---------------------------------------------
+   
 
         handler:
           async (response) => {
@@ -331,10 +318,9 @@ function App() {
               );
 
 
-              // -----------------------------------------
-              // STEP 7
+               
               // Verify payment on backend
-              // -----------------------------------------
+    
 
               const verification =
                 await verifyPayment(
@@ -357,25 +343,23 @@ function App() {
               );
 
 
-              // -----------------------------------------
-              // STEP 8
+             
               // Payment verified
-              // -----------------------------------------
+               
 
             
 
 
-             setPaymentSuccess(true);
+           setPaymentSuccess(true);
 
 setPaymentInfo({
-  orderId:
-    verification.order.id,
+  orderId: verification.order.id,
 
   razorpayOrderId:
-    verification.payment.orderId,
+    response.razorpay_order_id,
 
   razorpayPaymentId:
-    verification.payment.paymentId,
+    response.razorpay_payment_id,
 
   amount:
     verification.order.amount,
@@ -388,11 +372,16 @@ setPaymentInfo({
     product.name,
 });
 
-setGuardrail((previous) => previous ? {
-  ...previous,
-  decision: "APPROVED",
-  reason: "Payment completed and verified successfully.",
-} : previous);
+setGuardrail((previous) =>
+  previous
+    ? {
+        ...previous,
+        decision: "APPROVED",
+        reason:
+          "Payment completed and verified successfully.",
+      }
+    : previous
+);
 
 setPurchaseError("");
 
@@ -422,9 +411,9 @@ setPurchaseError("");
           },
 
 
-        // ---------------------------------------------
+       
         // PAYMENT CHECKOUT CLOSED
-        // ---------------------------------------------
+  
 
         modal: {
 
@@ -441,10 +430,10 @@ setPurchaseError("");
       };
 
 
-      // -----------------------------------------------
-      // STEP 9
+     
+      
       // Open Razorpay Checkout
-      // -----------------------------------------------
+      
 
       const razorpay =
         new window.Razorpay(
@@ -462,9 +451,9 @@ setPurchaseError("");
 
   setPaymentSuccess(false);
 
-  // -----------------------------------------------
+ 
   // Handle spending guardrail rejection
-  // -----------------------------------------------
+ 
 
   if (
     error instanceof Error &&
@@ -502,9 +491,9 @@ setPurchaseError("");
     }
   }
 
-  // -----------------------------------------------
+ 
   // Other purchase errors
-  // -----------------------------------------------
+ 
 
   setPurchaseError(
     error instanceof Error
@@ -517,19 +506,16 @@ setPurchaseError("");
 }
   };
 
-
-  // ===================================================
-  // UI
-  // ===================================================
+ 
 
   return (
 
     <div className="min-h-screen bg-slate-950 text-white">
 
 
-      {/* =================================================
-          NAVBAR
-      ================================================= */}
+     
+ 
+    
 
       <Navbar
         user={user}
@@ -538,16 +524,14 @@ setPurchaseError("");
       />
 
 
-      {/* =================================================
-          MAIN
-      ================================================= */}
+    
+   
 
       <main className="mx-auto max-w-7xl px-6 py-12">
 
 
-        {/* =================================================
-            AI CHAT
-        ================================================= */}
+  
+        
 
         <AgentChat
           onProductSearch={
@@ -556,9 +540,7 @@ setPurchaseError("");
         />
 
 
-        {/* =================================================
-            SEARCH ERROR
-        ================================================= */}
+    
 
         {searchError && (
 
@@ -570,19 +552,14 @@ setPurchaseError("");
 
         )}
 
-
-        {/* =================================================
-            AI INTENT
-        ================================================= */}
+ 
 
         <IntentPanel
           intent={intent}
         />
 
 
-        {/* =================================================
-            PRODUCT RECOMMENDATIONS
-        ================================================= */}
+  
 
     <ProductGrid
   products={products}
@@ -591,9 +568,7 @@ setPurchaseError("");
 />
 
 
-        {/* =================================================
-            PURCHASE ERROR
-        ================================================= */}
+ 
 
         {purchaseError && (
 
@@ -606,28 +581,24 @@ setPurchaseError("");
         )}
 
 
-        {/* =================================================
-            PAYMENT SUCCESS
-        ================================================= */}
+       
 
      {paymentSuccess && paymentInfo && (
   <section className="mt-16">
 
     <div className="overflow-hidden rounded-3xl border border-emerald-500/20 bg-slate-900 shadow-2xl shadow-emerald-950/20">
 
-      {/* ================================================= */}
-      {/* SUCCESS HEADER */}
-      {/* ================================================= */}
+   
 
       <div className="relative overflow-hidden border-b border-slate-800 px-6 py-10 text-center sm:px-10">
 
-        {/* Glow */}
+      
 
         <div className="pointer-events-none absolute left-1/2 top-0 h-40 w-40 -translate-x-1/2 rounded-full bg-emerald-500/10 blur-3xl" />
 
         <div className="relative">
 
-          {/* Success icon */}
+ 
 
           <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full border border-emerald-500/30 bg-emerald-500/10 text-3xl text-emerald-400 shadow-lg shadow-emerald-500/10">
             ✓
@@ -642,7 +613,7 @@ setPurchaseError("");
             successfully confirmed by AgentPay AI.
           </p>
 
-          {/* Amount */}
+     
 
           <div className="mt-6">
 
@@ -661,13 +632,11 @@ setPurchaseError("");
       </div>
 
 
-      {/* ================================================= */}
-      {/* ORDER DETAILS */}
-      {/* ================================================= */}
+      
 
       <div className="p-6 sm:p-8">
 
-        {/* Product */}
+      
 
         <div className="rounded-2xl border border-slate-800 bg-slate-950 p-5">
 
@@ -694,13 +663,11 @@ setPurchaseError("");
         </div>
 
 
-        {/* ================================================= */}
-        {/* VERIFICATION STEPS */}
-        {/* ================================================= */}
+ 
 
         <div className="mt-5 grid gap-3 md:grid-cols-3">
 
-          <div className="rounded-xl border border-emerald-500/10 bg-emerald-500/[0.03] p-4">
+          <div className="rounded-xl border border-emerald-500/10 bg-emerald-500/0.03 p-4">
 
             <div className="flex items-center gap-3">
 
@@ -723,7 +690,7 @@ setPurchaseError("");
           </div>
 
 
-          <div className="rounded-xl border border-emerald-500/10 bg-emerald-500/[0.03] p-4">
+          <div className="rounded-xl border border-emerald-500/10 bg-emerald-500/0.03 p-4">
 
             <div className="flex items-center gap-3">
 
@@ -746,7 +713,7 @@ setPurchaseError("");
           </div>
 
 
-          <div className="rounded-xl border border-emerald-500/10 bg-emerald-500/[0.03] p-4">
+          <div className="rounded-xl border border-emerald-500/10 bg-emerald-500/0.03 p-4">
 
             <div className="flex items-center gap-3">
 
@@ -771,9 +738,7 @@ setPurchaseError("");
         </div>
 
 
-        {/* ================================================= */}
-        {/* TRANSACTION DETAILS */}
-        {/* ================================================= */}
+ 
 
         <div className="mt-6 rounded-2xl border border-slate-800">
 
@@ -804,7 +769,7 @@ setPurchaseError("");
 
           <div className="divide-y divide-slate-800">
 
-            {/* AgentPay Order */}
+          
 
             <div className="flex flex-col gap-2 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
 
@@ -819,7 +784,7 @@ setPurchaseError("");
             </div>
 
 
-            {/* Razorpay Order */}
+        
 
             <div className="flex flex-col gap-2 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
 
@@ -834,7 +799,7 @@ setPurchaseError("");
             </div>
 
 
-            {/* Payment ID */}
+   
 
             <div className="flex flex-col gap-2 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
 
@@ -853,9 +818,7 @@ setPurchaseError("");
         </div>
 
 
-        {/* ================================================= */}
-        {/* FINAL MESSAGE */}
-        {/* ================================================= */}
+ 
 
         <div className="mt-6 flex items-start gap-3 rounded-2xl border border-violet-500/20 bg-violet-500/5 p-5">
 
@@ -887,18 +850,14 @@ setPurchaseError("");
 )}
 
 
-        {/* =================================================
-            PURCHASE GUARDRAIL
-        ================================================= */}
+ 
 
         <GuardrailPanel guardrail={guardrail} />
 
       </main>
 
 
-      {/* =================================================
-          FOOTER
-      ================================================= */}
+ 
 
       <footer className="border-t border-slate-800 py-8 text-center text-sm text-slate-600">
 

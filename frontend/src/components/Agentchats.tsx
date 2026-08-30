@@ -105,9 +105,9 @@ function AgentChat({
   return (
     <section className="mx-auto max-w-4xl">
 
-      {/* ================================================= */}
+ 
       {/* HEADER */}
-      {/* ================================================= */}
+ 
 
       <div className="mb-8 text-center">
 
@@ -146,15 +146,15 @@ function AgentChat({
       </div>
 
 
-      {/* ================================================= */}
+ 
       {/* CHAT CONTAINER */}
-      {/* ================================================= */}
+   
 
       <div className="overflow-hidden rounded-3xl border border-slate-800 bg-slate-900/80 shadow-2xl shadow-black/20">
 
-        {/* ================================================= */}
+      
         {/* CHAT HEADER */}
-        {/* ================================================= */}
+ 
 
         <div className="flex items-center justify-between border-b border-slate-800 px-5 py-4">
 
@@ -192,11 +192,11 @@ function AgentChat({
         </div>
 
 
-        {/* ================================================= */}
+ 
         {/* MESSAGES */}
-        {/* ================================================= */}
+      
 
-        <div className="max-h-[420px] min-h-[280px] space-y-5 overflow-y-auto p-5 sm:p-6">
+        <div className="max-h-420px min-h-280px space-y-5 overflow-y-auto p-5 sm:p-6">
 
           {messages.map((msg, index) => {
 
@@ -236,9 +236,9 @@ function AgentChat({
           })}
 
 
-          {/* ================================================= */}
+ 
           {/* THINKING INDICATOR */}
-          {/* ================================================= */}
+       
 
           {loading && (
             <div className="flex items-end gap-3">
@@ -263,9 +263,9 @@ function AgentChat({
         </div>
 
 
-        {/* ================================================= */}
+ 
         {/* INPUT AREA */}
-        {/* ================================================= */}
+        
 
         <div className="border-t border-slate-800 bg-slate-950/40 p-4">
 
@@ -341,9 +341,9 @@ function AgentChat({
       </div>
 
 
-      {/* ================================================= */}
+   
       {/* CAPABILITIES */}
-      {/* ================================================= */}
+    
 
       <div className="mt-5 grid gap-3 sm:grid-cols-3">
 

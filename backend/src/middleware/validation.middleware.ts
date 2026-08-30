@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import { z, ZodIssue } from "zod";
+import { z, } from "zod";
 import { logger } from "../lib/logger.js";
 
 /**
@@ -52,9 +52,7 @@ export const schemas = {
       .string()
       .min(1, "name is required")
       .max(100, "name is too long"),
-    email: z
-      .string()
-      .email("email must be valid"),
+    email: z.email("email must be valid"),
     spendingLimit: z
       .number()
       .nonnegative("spendingLimit must be non-negative")
@@ -65,9 +63,7 @@ export const schemas = {
   }),
 
   login: z.object({
-    email: z
-      .string()
-      .email("email must be valid"),
+    email: z.email("email must be valid"),
     password: z
       .string()
       .min(1, "password is required"),

@@ -35,9 +35,9 @@ function ProductCard({
   return (
     <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/80 shadow-lg shadow-black/10 transition-all duration-300 hover:-translate-y-1 hover:border-violet-500/40 hover:shadow-xl hover:shadow-violet-950/20">
 
-      {/* ================================================= */}
+ 
       {/* AI MATCH BADGE */}
-      {/* ================================================= */}
+ 
 
       <div className="absolute left-5 top-5 z-10">
         <span className="inline-flex items-center gap-1.5 rounded-full border border-violet-500/20 bg-slate-950/80 px-3 py-1.5 text-xs font-medium text-violet-300 shadow-lg backdrop-blur-md">
@@ -47,11 +47,11 @@ function ProductCard({
       </div>
 
 
-      {/* ================================================= */}
+ 
       {/* PRODUCT VISUAL */}
-      {/* ================================================= */}
+ 
 
-      <div className="relative m-3 overflow-hidden rounded-xl bg-gradient-to-br from-slate-800 via-slate-850 to-slate-950">
+      <div className="relative m-3 overflow-hidden rounded-xl bg-linear-to-br from-slate-800 via-slate-850 to-slate-950">
 
         {/* Background glow */}
         <div className="pointer-events-none absolute left-1/2 top-1/2 h-32 w-32 -translate-x-1/2 -translate-y-1/2 rounded-full bg-violet-600/10 blur-3xl transition-all duration-500 group-hover:bg-violet-600/20" />
@@ -79,10 +79,9 @@ function ProductCard({
 
       </div>
 
-
-      {/* ================================================= */}
+ 
       {/* PRODUCT CONTENT */}
-      {/* ================================================= */}
+ 
 
       <div className="flex flex-1 flex-col px-5 pb-5 pt-2">
 
@@ -114,13 +113,13 @@ function ProductCard({
         </div>
 
 
-        {/* ================================================= */}
+ 
         {/* PRODUCT NAME */}
-        {/* ================================================= */}
+      
 
         <div className="mt-4">
 
-          <h4 className="min-h-[3.5rem] text-lg font-semibold leading-7 text-white transition-colors duration-200 group-hover:text-violet-300">
+          <h4 className="min-h-3.5rem text-lg font-semibold leading-7 text-white transition-colors duration-200 group-hover:text-violet-300">
             {product.name}
           </h4>
 
@@ -132,24 +131,23 @@ function ProductCard({
 
         </div>
 
-
-        {/* ================================================= */}
+ 
         {/* DESCRIPTION */}
-        {/* ================================================= */}
+    
 
         <p className="mt-3 line-clamp-2 text-sm leading-6 text-slate-500">
           {product.description}
         </p>
 
 
-        {/* ================================================= */}
+       
         {/* AI RANKING REASON */}
-        {/* ================================================= */}
+    
 
         {product.rankingReasons &&
           product.rankingReasons.length > 0 && (
 
-            <div className="mt-5 rounded-xl border border-violet-500/20 bg-gradient-to-br from-violet-500/10 to-transparent p-4">
+            <div className="mt-5 rounded-xl border border-violet-500/20 bg-linear-to-br from-violet-500/10 to-transparent p-4">
 
               {/* Header */}
 
@@ -203,9 +201,9 @@ function ProductCard({
           )}
 
 
-        {/* ================================================= */}
+ 
         {/* PRICE + PURCHASE */}
-        {/* ================================================= */}
+       
 
         <div className="mt-auto pt-6">
 
@@ -239,9 +237,9 @@ function ProductCard({
           </div>
 
 
-          {/* ================================================= */}
+      
           {/* BUY BUTTON */}
-          {/* ================================================= */}
+         
 
           <button
             onClick={() => onBuy(product)}
