@@ -11,9 +11,16 @@ import productsRouter from "./routes/product.routes.js";
 import agentRouter from "./routes/agent.routes.js";
 import usersRouter from "./routes/users.routes.js";
 import paymentRoutes from "./routes/payment.routes.js";
+import webhookRouter from "./routes/webhook.routes.js";
 const app = express();
 
 app.use(cors());
+
+app.use(
+  "/api/payment/webhook",
+  express.raw({ type: "application/json" }),
+  webhookRouter
+);
 app.use(express.json());
 
 // ✅ Add request logging middleware
