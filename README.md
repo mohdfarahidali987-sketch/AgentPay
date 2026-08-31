@@ -6,7 +6,7 @@
 
 **Track:** AI Growth & Agentic Commerce — Razorpay Buildathon
 
-🌐 [Live Demo](https://agent-pay-ebon.vercel.app) · 🎥 [Demo Video](YOUR_YOUTUBE_URL) · 💻 [GitHub](https://github.com/mohdfarahidali987-sketch/AgentPay)
+🌐 [Live Demo](https://agent-pay-ebon.vercel.app) · 💻 [GitHub](https://github.com/mohdfarahidali987-sketch/AgentPay)
 
 ---
 
