@@ -1,103 +1,280 @@
- # 🤖 AgentPay AI
+# 🤖 AgentPay AI
 
-**AI-powered agentic commerce platform** — users describe what they want in natural language, an AI agent searches and ranks products, and a deterministic backend enforces authentication, inventory, and spending limits before any payment is initiated.
+**AI-powered agentic commerce platform** where users describe what they want in natural language, an AI agent discovers and ranks products, and a deterministic backend controls authentication, inventory, spending limits, and payments.
 
 > **Core idea:** AI recommends. The backend decides.
 
-**Track:** AI Growth & Agentic Commerce (Razorpay Buildathon)
+**Track:** AI Growth & Agentic Commerce — Razorpay Buildathon
 
-🌐 [Live Demo](https://agent-pay-ebon.vercel.app) · 🎥 [Demo Video](YOUR_YOUTUBE_URL) · 💻 [Repo](https://github.com/mohdfarahidali987-sketch/AgentPay)
-
----
-
-## Architecture
-
-
-The AI layer only ever *recommends*. Every step that touches money, inventory, or auth is deterministic backend logic, verified independently of anything the AI suggested.
+🌐 [Live Demo](https://agent-pay-ebon.vercel.app) · 🎥 [Demo Video](YOUR_YOUTUBE_URL) · 💻 [GitHub](https://github.com/mohdfarahidali987-sketch/AgentPay)
 
 ---
 
-## Features
+## 🎯 Problem
 
-**AI Shopping Agent** — understands natural-language requests ("gaming mouse under ₹2,000 with good reviews"), extracts intent, searches the catalog, and ranks results with an explanation for each recommendation (price, rating, reviews, stock).
+Traditional e-commerce makes users manually search, filter, compare, and evaluate products before making a purchase.
 
-**Spending Guardrail** — every purchase is checked against a spending limit before checkout opens:
+AgentPay AI reduces this friction by allowing users to express their shopping intent in natural language. The AI understands the request, discovers relevant products, ranks them, and guides the user toward a purchase.
 
+Because an AI agent participates in a financial workflow, AgentPay separates **AI decision support from security-critical operations**.
 
-
-**Payment Processing** — Razorpay order creation, checkout, backend signature verification, and webhook-based sync (`payment.authorized`, `payment.captured`, `payment.failed`) so internal order state never drifts from what Razorpay actually recorded.
-
-**Auth** — email/password and Google sign-in, JWT-protected routes, backend-side authorization on every request.
-
-**Audit trail** — every agent action and payment state change is logged to `AgentAction`/audit tables in Postgres.
+> AI handles intent and recommendations. Authentication, spending controls, inventory, and payment decisions remain deterministic backend operations.
 
 ---
 
-## Tech Stack
+## 🏗️ Architecture
 
-| Layer | Stack |
+```text
+User
+ │
+ ▼
+AI Shopping Agent
+(Search → Filter → Rank → Recommend)
+ │
+ ▼
+User selects "Buy with AI"
+ │
+ ▼
+Backend Purchase Workflow
+ │
+ ├── JWT Authentication
+ ├── Product Validation
+ ├── Stock Validation
+ └── Spending Guardrail
+          │
+          ├── BLOCKED ──► Purchase Rejected
+          │
+          └── APPROVED
+                  │
+                  ▼
+           Create Internal Order
+                  │
+                  ▼
+           Create Razorpay Order
+                  │
+                  ▼
+           Razorpay Checkout
+                  │
+                  ▼
+          Payment Verification
+                  │
+                  ▼
+          Razorpay Webhook
+        ┌─────────┼─────────┐
+        ▼         ▼         ▼
+    authorized  captured  failed
+        │         │         │
+        └─────────┼─────────┘
+                  ▼
+          Database State Update
+                  │
+                  ▼
+          Inventory + Audit Log
+```
+
+---
+
+## ✨ Key Features
+
+### 🤖 AI Shopping Agent
+
+- Natural-language shopping requests
+- Intent and requirement extraction
+- Product discovery and filtering
+- Product ranking
+- Recommendation explanations
+- Conversational shopping assistance
+
+Example:
+
+```text
+"Find a gaming mouse under ₹2,000 with good reviews."
+```
+
+---
+
+### 🛡️ Spending Guardrail
+
+Every purchase is checked against the user's spending limit **before Razorpay Checkout is opened**.
+
+```text
+Limit:     ₹5,000
+Spent:     ₹1,499
+Remaining: ₹3,501
+
+Product:   ₹22,999
+Decision:  BLOCKED
+```
+
+The AI cannot bypass the backend spending guardrail.
+
+---
+
+### 💳 Razorpay Payments
+
+AgentPay integrates Razorpay with:
+
+- Server-side Razorpay order creation
+- Razorpay Checkout
+- HMAC SHA-256 payment signature verification
+- Razorpay Webhooks
+- Payment state synchronization
+- Inventory updates
+- Audit logging
+
+Handled webhook events:
+
+```text
+payment.authorized
+payment.captured
+payment.failed
+```
+
+---
+
+### 🔐 Authentication & Security
+
+- Email/password authentication
+- Google Sign-In
+- JWT-protected APIs
+- Backend authorization
+- Zod request validation
+- Environment-based secret management
+- Server-side payment verification
+- Webhook signature verification
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technologies |
 |---|---|
-| Frontend | React, TypeScript, Vite, Tailwind CSS, Razorpay Checkout |
-| Backend | Node.js, Express, TypeScript, Prisma ORM, Zod, JWT |
-| Database | PostgreSQL |
+| Frontend | React, TypeScript, Vite, Tailwind CSS |
+| Backend | Node.js, Express, TypeScript |
+| Database | PostgreSQL, Prisma ORM |
 | AI | OpenAI API |
-| Payments | Razorpay SDK + Webhooks |
+| Authentication | JWT, Google Sign-In |
+| Validation | Zod |
+| Payments | Razorpay Checkout, Razorpay Webhooks |
+| Deployment | Vercel, Render |
 
 ---
 
-## Database
+## 🗄️ Database
 
-Core entities: `User`, `Product`, `Order`, `AgentAction` (audit log). Orders and AgentActions both reference the purchasing user; every AI-initiated action is written to `AgentAction` independent of whether the resulting order succeeded.
+AgentPay uses **PostgreSQL + Prisma ORM**.
+
+Core entities:
+
+- `User` — authentication and spending limits
+- `Product` — catalog, pricing, ratings, and inventory
+- `Order` — purchase and Razorpay payment state
+- `AgentAction` — agent and commerce audit trail
 
 ---
 
-## Setup
+## 🚀 Setup
+
+### Backend
 
 ```bash
 git clone https://github.com/mohdfarahidali987-sketch/AgentPay.git
-cd AgentPay
+cd AgentPay/backend
 
-# Backend
-cd backend
 npm install
-cp .env.example .env   # fill DATABASE_URL, JWT_SECRET, RAZORPAY_KEY_ID/SECRET, OPENAI_API_KEY
+cp .env.example .env
+```
+
+Configure:
+
+```env
+DATABASE_URL=
+JWT_SECRET=
+
+RAZORPAY_KEY_ID=
+RAZORPAY_KEY_SECRET=
+RAZORPAY_WEBHOOK_SECRET=
+
+OPENAI_API_KEY=
+AI_MODEL=
+GOOGLE_CLIENT_ID=
+```
+
+Then:
+
+```bash
 npx prisma migrate dev
-npm run dev
-
-# Frontend (separate terminal)
-cd frontend
-npm install
-cp .env.example .env   # fill VITE_API_URL, VITE_RAZORPAY_KEY_ID
 npm run dev
 ```
 
-Razorpay keys must be **test-mode** during development.
+### Frontend
+
+```bash
+cd frontend
+npm install
+cp .env.example .env
+```
+
+Configure:
+
+```env
+VITE_API_URL=
+VITE_RAZORPAY_KEY_ID=
+VITE_GOOGLE_CLIENT_ID=
+```
+
+Then:
+
+```bash
+npm run dev
+```
+
+> Use Razorpay **Test Mode** credentials during development.
 
 ---
 
-## Results
+## 🚀 Deployment
 
-<!-- Fill this in with your actual numbers — run your batch/test script and paste the output.
-This is the single most important section for the buildathon evaluation: it's the difference
-between "we built a guardrail" and "we proved the guardrail works." Example shape: -->
+**Frontend:** [AgentPay AI](https://agent-pay-ebon.vercel.app)
 
-- Orders processed in test batch: `__`
-- Auto-approved vs. blocked by spending guardrail: `__ / __`
-- Payment verification success rate: `__%`
-- Average time from "Buy with AI" click to order confirmation: `__`
+**Backend:** Deployed on Render.
+
+Razorpay Webhooks are configured to send payment events to the deployed backend.
 
 ---
 
-## What's Not Built Yet
+## 🔮 Future Improvements
 
-- Advanced payment reconciliation for edge-case async webhook ordering
-- Automated test suite
-- Observability/logging dashboard for agent actions in production
+- Advanced payment reconciliation for complex asynchronous payment scenarios
+- Idempotent webhook event processing
+- Automated unit, integration, and end-to-end testing
+- Production observability and payment monitoring
+- Refund and cancellation workflows
+- More advanced multi-agent commerce workflows
 
 ---
 
-## Author
+## 👨‍💻 Author
 
-**Muhammed Farahid** — B.Tech CSE, NIT Srinagar. Interested in backend engineering, AI-powered systems, and payment infrastructure.
+### Muhammed Farahid
 
-[GitHub](https://github.com/mohdfarahidali987-sketch) · [AgentPay AI](https://github.com/mohdfarahidali987-sketch/AgentPay)
+B.Tech Computer Science & Engineering, **NIT Srinagar**.
+
+Interested in:
+
+- Backend Engineering
+- AI & Agentic Applications
+- Payment Infrastructure
+- Secure API Design
+- Full-Stack Development
+- Data Structures & Algorithms
+
+I built AgentPay AI to explore how AI agents can participate in real-world commerce while keeping financial and security-critical decisions under deterministic backend control.
+
+🔗 [GitHub](https://github.com/mohdfarahidali987-sketch) · [AgentPay AI](https://github.com/mohdfarahidali987-sketch/AgentPay)
+
+---
+
+### ⭐ AgentPay AI
+
+**AI recommends. The backend decides.**
