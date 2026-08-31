@@ -1,25 +1,24 @@
 # 🤖 AgentPay AI
 
-### AI-Powered Agentic Commerce Platform
+### AI-Powered Agentic Commerce & Secure Payment Platform
 
-AgentPay AI is an AI-powered commerce platform where users can describe what they want in natural language, and an AI shopping agent searches and ranks products, evaluates purchase requests against user spending limits, and initiates secure payments through Razorpay.
+AgentPay AI is an **AI-powered agentic commerce platform** that allows users to describe what they want in natural language.
 
-The project combines **AI agents, product discovery, authentication, spending guardrails, payment processing, inventory management, and audit logging** into a single commerce workflow.
+The AI shopping agent searches and ranks relevant products, while deterministic backend controls validate authentication, inventory, spending limits, and payment operations before a transaction is initiated.
+
+The platform integrates **Razorpay** for secure payment processing and uses **Razorpay Webhooks** to synchronize asynchronous payment events with the internal order state.
+
+> **Core idea:** Let AI assist with commerce decisions while keeping security-critical payment and spending decisions under deterministic backend control.
 
 ---
 
 ## 🔗 Quick Links
 
-[![Live Demo](https://img.shields.io/badge/Live-Demo-7c3aed?style=for-the-badge)](YOUR_DEPLOYED_URL)
-
-[![Demo Video](https://img.shields.io/badge/Demo-Video-red?style=for-the-badge)](YOUR_YOUTUBE_URL)
-
-[![GitHub](https://img.shields.io/badge/GitHub-Repository-black?style=for-the-badge)](https://github.com/mohdfarahidali987-sketch/AgentPay)
-
-> Replace `YOUR_DEPLOYED_URL` and `YOUR_YOUTUBE_URL` with your actual deployment and video links.
+- 🌐 **Live Demo:** [AgentPay AI](YOUR_VERCEL_URL)
+- 🎥 **5-Minute Demo Video:** [Watch Demo](YOUR_YOUTUBE_URL)
+- 💻 **GitHub:** [AgentPay Repository](https://github.com/mohdfarahidali987-sketch/AgentPay)
 
 ---
-
 
 # ✨ Features
 
@@ -31,7 +30,7 @@ Example:
 
 > "Find me a gaming mouse under ₹2,000 with good reviews."
 
-The AI analyzes the request and extracts relevant shopping intent and preferences.
+The AI understands the request and extracts relevant shopping intent and preferences.
 
 ---
 
@@ -39,15 +38,16 @@ The AI analyzes the request and extracts relevant shopping intent and preference
 
 The Product Agent:
 
-- Understands the user's request
+- Understands natural-language shopping requests
+- Extracts product requirements
 - Searches available products
-- Filters products according to the request
+- Filters products according to user requirements
 - Considers price and product attributes
 - Uses ratings and review information
 - Ranks relevant products
 - Provides explanations for recommendations
 
-Each recommended product can display:
+Each recommendation can display:
 
 - Product name
 - Brand
@@ -62,25 +62,27 @@ Each recommended product can display:
 
 ### 🛡️ Spending Guardrail
 
-Before a purchase is executed, AgentPay checks the user's spending limit.
+Before a purchase reaches the payment gateway, AgentPay applies a deterministic spending guardrail.
 
 Example:
 
 ```text
 Spending Limit:      ₹5,000
-Current Spending:   ₹1,499
-Remaining Limit:    ₹3,501
+Current Spending:    ₹1,499
+Remaining Limit:     ₹3,501
 
-Requested Product:  ₹22,999
+Requested Product:   ₹22,999
 
-Decision: BLOCKED
-
+Decision:             BLOCKED
 
 # 💳 Payment Flow
 
-AgentPay AI integrates **Razorpay** to provide a secure payment workflow for approved purchases.
+AgentPay AI integrates **Razorpay** to provide a secure and reliable
+payment workflow for approved purchases.
 
-The payment system is designed so that AI recommendations and spending decisions are handled before the payment gateway is opened.
+AI recommendations and spending decisions are handled before the
+payment gateway is opened. Security-critical payment operations are
+performed and verified on the backend.
 
 ## Payment Architecture
 
@@ -131,113 +133,105 @@ Backend Signature Verification
  ▼
 Payment Verified
  │
- ▼
-Order Status → PAID
- │
- ▼
-Atomic Stock Decrement
- │
- ▼
-Audit Log
+ ├──────────────────────────────────────┐
+ │                                      │
+ ▼                                      ▼
+Order Processing                 Razorpay Webhook
+ │                                      │
+ ▼                                      ▼
+Payment State                  payment.authorized
+                               payment.captured
+                               payment.failed
+                                      │
+                                      ▼
+                              Webhook Verification
+                                      │
+                                      ▼
+                              Database Synchronization
+                                      │
+                    ┌─────────────────┼─────────────────┐
+                    │                 │                 │
+                    ▼                 ▼                 ▼
+                  PAID              FAILED          AUTHORIZED
+                    │
+                    ▼
+             Atomic Stock Update
+                    │
+                    ▼
+                Audit Log
 
+# 🤖 AI Agent
 
+AgentPay AI uses an **agent-oriented architecture** to transform natural-language shopping requests into personalized product recommendations and actionable commerce workflows.
 
- 
+Instead of manually searching, filtering, comparing, and evaluating products, users can simply describe what they want. The AI interprets the request, discovers relevant products, ranks them, and provides explanations for its recommendations.
 
-```markdown
-### Payments
+The AI layer is intentionally separated from security-critical operations such as authentication, spending-limit enforcement, inventory validation, and payment processing.
 
-- Razorpay
-- Razorpay Checkout
-- Server-side payment signature verification
-- HMAC SHA-256 verification
-- Test Mode support
+> **AI recommends. The backend decides.**
 
-## 💡 Why Razorpay Integration?
+---
 
-The payment integration is not treated as a simple "Pay Now" button.
-
-AgentPay AI places deterministic backend controls before the payment gateway:
-
-```text
-AI Recommendation
-       ↓
-User Intent
-       ↓
-Authentication
-       ↓
-Spending Guardrail
-       ↓
-Product & Stock Validation
-       ↓
-Razorpay Order
-       ↓
-Razorpay Checkout
-       ↓
-Server-Side Verification
-       ↓
-Order Confirmation
-       ↓
-Inventory Update
-       ↓
-Audit Trail
-
-## 🤖 AI Agent
-
-AgentPay AI uses an agent-oriented architecture to turn natural-language shopping requests into actionable commerce workflows.
-
-Instead of requiring users to manually search, filter, compare, and purchase products, the user can simply describe what they want and the AI coordinates the shopping process.
-
-### 🧠 Agent Workflow
+## 🧠 Agent Workflow
 
 ```text
 User Request
      │
      ▼
-┌──────────────────────┐
-│   Supervisor Agent   │
-│  Intent Understanding│
-└──────────┬───────────┘
-           │
-           ▼
-    ┌──────────────┐
-    │ Search Agent │
-    │   Products   │
-    └──────┬───────┘
-           │
-           ▼
-   Product Filtering
-           │
-           ▼
-    Product Ranking
-           │
-           ▼
- AI Recommendation + Reasons
-           │
-           ▼
-       User Selects
+┌─────────────────────────┐
+│    Supervisor Agent     │
+│  Intent Understanding   │
+│  Requirement Extraction │
+└────────────┬────────────┘
+             │
+             ▼
+┌─────────────────────────┐
+│      Search Agent       │
+│   Product Discovery     │
+└────────────┬────────────┘
+             │
+             ▼
+      Product Filtering
+             │
+             ▼
+       Product Ranking
+             │
+             ▼
+┌─────────────────────────┐
+│ AI Recommendation       │
+│ + Ranking Explanation   │
+└────────────┬────────────┘
+             │
+             ▼
+        User Selects
         "Buy with AI"
-           │
-           ▼
-┌──────────────────────┐
-│   Purchase Workflow  │
-│ Authentication       │
-│ Stock Validation     │
-│ Spending Guardrail   │
-│ Payment Creation     │
-└──────────┬───────────┘
-           │
-           ▼
-       Razorpay
+             │
+             ▼
+┌─────────────────────────┐
+│   Backend Purchase      │
+│       Workflow          │
+│                         │
+│ Authentication          │
+│ Product Validation      │
+│ Stock Validation        │
+│ Spending Guardrail      │
+│ Order Creation          │
+└────────────┬────────────┘
+             │
+             ▼
+       Razorpay Payment
 
 
-       ## 🔐 Authentication & Security
+## 🔐 Authentication & Security
 
-AgentPay AI implements multiple layers of authentication and security to protect user accounts, purchase operations, payment workflows, and sensitive application data.
+AgentPay AI uses multiple layers of authentication, authorization, validation,
+and payment security to protect user accounts, purchase operations, and
+financial transactions.
 
-The security architecture follows a simple principle:
+The core security principle is:
 
-> **The frontend can request an operation, but the backend decides whether that operation is allowed.**
+> **The frontend can request an operation, but the backend decides whether
+> that operation is allowed.**
 
 ---
 
@@ -248,7 +242,7 @@ AgentPay supports two authentication methods:
 - Email & Password
 - Google Sign-In
 
-After successful authentication, the backend issues a JWT access token.
+After successful authentication, the backend issues a **JWT access token**.
 
 ```text
                     User
@@ -266,7 +260,7 @@ After successful authentication, the backend issues a JWT access token.
               Authentication
                      │
                      ▼
-                JWT Token
+                 JWT Token
                      │
                      ▼
               Frontend Storage
@@ -276,42 +270,56 @@ After successful authentication, the backend issues a JWT access token.
                      │
                      ▼
              Protected API
+                     │
+                     ▼
+          Backend Authorization
 
+  ## 🗄️ Database Design
 
-             ## 🗄️ Database Design
+AgentPay AI uses **PostgreSQL** as its relational database with **Prisma ORM**
+for type-safe database access, schema management, migrations, and database
+queries.
 
-AgentPay AI uses **PostgreSQL** as its relational database with **Prisma ORM** for type-safe database access and schema management.
+The database is designed around the core commerce workflow:
 
-The database is designed to support:
-
-- User authentication
-- Product catalog
-- Orders
-- Razorpay payment tracking
-- Spending limits
-- AI purchase decisions
-- Guardrail results
-- Audit logging
-- Product inventory management
-
----
+```text
+User
+ │
+ ├───────────────┐
+ │               │
+ ▼               ▼
+Orders      AgentActions
+ │               │
+ │               │
+ ▼               ▼
+Product       Audit Log
 
 ### 🏗️ Database Architecture
 
 ```text
-                    PostgreSQL
-                        │
-        ┌───────────────┼────────────────┐
-        │               │                │
-        ▼               ▼                ▼
-      User           Product           Order
-        │               │                │
-        │               │                │
-        └───────────────┼────────────────┘
-                        │
-                        ▼
-                  AgentAction
-                   (Audit Log)
+                                         PostgreSQL
+                              │
+             ┌────────────────┼────────────────┐
+             │                │                │
+             ▼                ▼                ▼
+          ┌──────┐        ┌─────────┐      ┌─────────┐
+          │ User │        │ Product │      │  Order  │
+          └──┬───┘        └────┬────┘      └────┬────┘
+             │                 │                │
+             │                 │                │
+             │                 └───────┬────────┘
+             │                         │
+             │                         ▼
+             │                    Purchase
+             │                    Lifecycle
+             │                         │
+             └─────────────┬───────────┘
+                           │
+                           ▼
+                    ┌──────────────┐
+                    │ AgentAction  │
+                    │  Audit Log   │
+                    └──────────────┘
 
 
                    ## 🛠️ Tech Stack
@@ -320,127 +328,248 @@ AgentPay AI is built using a modern full-stack architecture with a focus on **AI
 
 ### 🎨 Frontend
 
+AgentPay AI uses a modern React-based frontend focused on conversational
+shopping, product discovery, secure purchasing, and payment feedback.
+
 | Technology | Purpose |
 |---|---|
 | **React** | Building the interactive user interface |
 | **TypeScript** | Type-safe frontend development |
-| **Vite** | Fast development server and production build |
+| **Vite** | Development server and production build |
 | **Tailwind CSS** | Responsive and modern UI styling |
-| **React Hooks** | Managing application state and component lifecycle |
+| **React Hooks** | Managing component state and lifecycle |
 | **Fetch API** | Communicating with backend REST APIs |
+| **Razorpay Checkout** | Handling the client-side payment experience |
+
+### Frontend Responsibilities
 
 The frontend provides:
 
-- AI shopping interface
-- Conversational AI chat
-- Product recommendations
-- Product ranking explanations
-- Authentication UI
-- Spending guardrail status
-- Razorpay checkout integration
-- Payment status and order feedback
-- Responsive dashboard-style interface
+- 🤖 AI-powered shopping interface
+- 💬 Conversational AI chat
+- 🔎 Product search and discovery
+- ⭐ Product recommendations and ranking explanations
+- 🔐 Email/password and Google authentication
+- 🛡️ Spending guardrail feedback
+- 🛒 Product purchase workflow
+- 💳 Razorpay Checkout integration
+- ✅ Payment verification feedback
+- 📦 Order and payment status
+- 📱 Responsive dashboard-style interface
+
+The frontend acts primarily as a **client interface**. Security-critical
+decisions such as authorization, spending limits, inventory validation, and
+payment verification are handled by the backend.
 
 ---
 
 ### ⚙️ Backend
 
+AgentPay AI uses a modular **Node.js + Express + TypeScript** backend to
+handle authentication, AI orchestration, commerce workflows, guardrails,
+database operations, and payment processing.
+
 | Technology | Purpose |
 |---|---|
-| **Node.js** | Backend JavaScript runtime |
+| **Node.js** | Backend runtime |
 | **Express.js** | REST API framework |
 | **TypeScript** | Type-safe backend development |
-| **Zod** | Request validation and schema validation |
+| **Prisma ORM** | Type-safe database access and transactions |
+| **PostgreSQL** | Relational database |
+| **JWT** | Authentication and protected API access |
+| **Zod** | Request and schema validation |
 | **CORS** | Cross-origin request handling |
 | **dotenv** | Environment variable management |
+| **Razorpay SDK** | Server-side payment and order integration |
+| **OpenAI API** | AI agent and conversational capabilities |
+
+### Backend Responsibilities
 
 The backend is responsible for:
 
-- Authentication
-- Authorization
-- AI orchestration
+#### 🔐 Authentication & Authorization
+
+- User registration
+- Email/password authentication
+- Google authentication
+- JWT token generation
+- Protected API routes
+- User authorization
+
+#### 🤖 AI & Commerce
+
+- AI agent orchestration
+- Natural-language request processing
 - Product search
-- Purchase workflow
+- Product filtering and ranking
+- AI-powered recommendations
+- Conversational shopping
+
+#### 🛡️ Purchase Guardrails
+
 - Spending-limit enforcement
+- Product validation
 - Stock validation
+- Purchase approval/blocking
+- Deterministic backend purchase decisions
+
+#### 💳 Payment Processing
+
+- Server-side Razorpay Order creation
+- Razorpay Checkout integration
+- Payment signature verification
+- Razorpay Webhook processing
+- `payment.authorized` handling
+- `payment.captured` handling
+- `payment.failed` handling
+- Payment state synchronization
+- Order status management
+
+#### 🗄️ Database & Audit
+
+- PostgreSQL data management
+- Prisma ORM
+- User and product management
 - Order management
-- Payment creation
-- Payment verification
-- Audit logging
+- Inventory updates
+- Payment tracking
+- Agent action logging
+- Audit trail
+- Database transactions
 
 ---
 
+### 🔄 Backend Architecture
+
+```text
+                         Express Backend
+                               │
+          ┌────────────────────┼────────────────────┐
+          │                    │                    │
+          ▼                    ▼                    ▼
+    Authentication        AI / Commerce        Payments
+          │                    │                    │
+          │                    │                    ├── Razorpay
+          │                    │                    ├── Verification
+          │                    │                    └── Webhooks
+          │                    │
+          │                    └── Product Search
+          │                    └── Recommendations
+          │                    └── Purchase Workflow
+          │
+          └── JWT
+                               │
+                               ▼
+                         Guardrail Layer
+                               │
+                               ▼
+                         Prisma ORM
+                               │
+                               ▼
+                         PostgreSQL
+
 ### 🤖 AI
+
+AgentPay AI uses the **OpenAI API** to power its natural-language shopping
+experience and agentic commerce workflow.
+
+Users can describe what they want in their own words, and the AI interprets
+their intent, extracts relevant requirements, and assists in discovering and
+ranking suitable products.
 
 | Technology | Purpose |
 |---|---|
-| **OpenAI API** | Natural-language understanding and AI agent functionality |
+| **OpenAI API** | Natural-language understanding, intent processing, recommendations, and conversational AI |
 
-The AI layer is used for:
+### 🧠 AI Responsibilities
+
+The AI layer is responsible for:
 
 - Understanding natural-language shopping requests
 - Detecting user intent
 - Extracting product requirements
-- Product search assistance
-- Product recommendation
-- Ranking explanations
-- Conversational shopping assistance
+- Assisting product discovery
+- Filtering relevant products
+- Ranking products based on user requirements
+- Generating recommendation explanations
+- Providing conversational shopping assistance
 
-The AI is separated from security-critical operations.
+### 🔐 AI Security Boundary
+
+The AI is intentionally separated from security-critical operations.
+
+The AI can **recommend** a product, but it cannot directly authorize or
+execute a payment.
 
 ```text
 User
-  ↓
-AI understands request
-  ↓
-Product recommendations
-  ↓
-User chooses product
-  ↓
-Backend validates purchase
-  ↓
-Spending Guardrail
-  ↓
+  │
+  ▼
+Natural-Language Request
+  │
+  ▼
+AI Agent
+  │
+  ├── Understand Intent
+  ├── Extract Requirements
+  ├── Find Products
+  └── Rank Recommendations
+  │
+  ▼
+AI Recommendation
+  │
+  ▼
+User Selects Product
+  │
+  ▼
+Backend
+  │
+  ├── Authentication
+  ├── Product Validation
+  ├── Stock Validation
+  └── Spending Guardrail
+  │
+  ▼
 Razorpay Payment
-
 
 ## 🔮 Future Improvements
 
-AgentPay AI is designed as a foundation for **secure agentic commerce**. The current implementation focuses on AI-powered product discovery, spending guardrails, authentication, Razorpay payments, inventory management, and auditability.
+AgentPay AI is designed as a foundation for **secure agentic commerce**. The current implementation focuses on AI-powered product discovery, deterministic spending guardrails, authentication, secure Razorpay payments, webhook-based payment synchronization, inventory management, and auditability.
 
-The following improvements are planned for future versions.
+Future improvements will focus on improving **payment reliability, AI capabilities, scalability, observability, and automated testing**.
 
-### 🔔 1. Razorpay Webhooks
+### 💰 1. Advanced Payment Reconciliation
 
-Add Razorpay webhooks to handle asynchronous payment events such as:
+Build a comprehensive reconciliation system to handle complex and asynchronous payment scenarios and keep Razorpay payment states synchronized with internal order states.
 
 ```text
-payment.captured
-payment.failed
-order.paid
-refund.created
-refund.processed
+Razorpay Payment Events
+          │
+          ▼
+   Payment Reconciliation
+          │
+          ▼
+   Internal Order State
 
 ## 👨‍💻 Author
 
 ### Muhammed Farahid
 
-B.Tech Computer Science & Engineering student at **National Institute of Technology Srinagar (NIT Srinagar)**, passionate about **Full-Stack Development, Data Structures & Algorithms, AI-powered applications, and backend systems**.
+B.Tech Computer Science & Engineering student at **National Institute of Technology Srinagar (NIT Srinagar)** with a strong interest in **software engineering, backend development, AI-powered systems, and data structures & algorithms**.
 
-I built **AgentPay AI** to explore how AI agents can be integrated with real-world commerce and payment systems while keeping security-critical decisions under deterministic backend control.
+I built **AgentPay AI** to explore how AI agents can participate in real-world commerce while maintaining strong boundaries around **authentication, spending controls, payment verification, and financial operations**.
 
-### 💻 Interests
+### 💻 Areas of Interest
 
-- Full-Stack Web Development
-- AI & Agentic Applications
-- Backend Engineering
-- Data Structures & Algorithms
-- Payment Systems
-- Secure API Design
-- Database Systems
+- 🤖 AI & Agentic Applications
+- ⚙️ Backend & Full-Stack Engineering
+- 💳 Payment Systems & FinTech
+- 🛡️ Secure API Design
+- 🗄️ Database Systems
+- 🧠 Data Structures & Algorithms
+- 🌐 Web Application Development
 
-## GitHub:
-https://github.com/mohdfarahidali987-sketch
+### 🔗 Links
 
-## AgentPay AI:
-https://github.com/mohdfarahidali987-sketch/AgentPay
+- **GitHub:** [mohdfarahidali987-sketch](https://github.com/mohdfarahidali987-sketch)
+- **AgentPay AI:** [View Repository](https://github.com/mohdfarahidali987-sketch/AgentPay)
